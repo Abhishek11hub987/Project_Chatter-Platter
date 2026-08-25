@@ -1,6 +1,87 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../supabase';
 
+export const useAuth = () => {
+  const [user, setUser] = useState(null);
+  const [role, setRole] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    // Get initial session
+    const checkSession = async () => {
+      try {
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+        if (sessionError) throw sessionError;
+        
+        if (session?.user) {
+          setUser(session.user);
+          await fetchRole(session.user.id);
+        }
+      } catch (err) {
+        console.error('Session error:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    checkSession();
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (session?.user) {
+        setUser(session.user);
+        await fetchRole(session.user.id);
+      } else {
+        setUser(null);
+        setRole(null);
+      }
+      setLoading(false);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const fetchRole = async (userId) => {
+    try {
+      const { data, error } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', userId)
+        .single();
+      
+      if (error && error.code !== 'PGRST116') {
+        console.error('Error fetching role:', error);
+      }
+      
+      setRole(data?.role || 'staff'); // fallback to basic staff
+    } catch (err) {
+      console.error('Error fetching role:', err);
+    }
+  };
+
+  const login = async (email, password) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) throw error;
+      return true;
+    } catch (err) {
+      setError(err.message);
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const logout = async () => {
+    await supabase.auth.signOut();
+  };
+
+  return { user, role, loading, error, login, logout };
+};
+
 export const useMenu = () => {
   const [menu, setMenu] = useState([]);
   const [loading, setLoading] = useState(true);
