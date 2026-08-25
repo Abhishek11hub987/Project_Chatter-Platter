@@ -82,7 +82,7 @@ const Dashboard = () => {
           </div>
           
           <div className="flex items-center gap-4">
-            {role === 'owner' && (
+            {(role === 'owner' || viewAs) && (
               <div className="flex items-center gap-2 bg-gray-50 border px-3 py-1.5 rounded-xl">
                 <MonitorSmartphone className="w-4 h-4 text-gray-500" />
                 <select 
