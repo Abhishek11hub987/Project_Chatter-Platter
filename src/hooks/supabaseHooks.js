@@ -153,15 +153,13 @@ export const useOrders = (statusFilter = null) => {
   useEffect(() => {
     loadOrders();
 
-    // Realtime subscription (may not work if Realtime isn't enabled for the table)
     const channel = supabase.channel(`orders_changes_${Date.now()}`)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, () => {
         loadOrders();
       })
       .subscribe();
 
-    // Polling fallback: refresh every 3 seconds to guarantee updates
-    const pollInterval = setInterval(loadOrders, 3000);
+    const pollInterval = setInterval(loadOrders, 5000);
 
     return () => {
       supabase.removeChannel(channel);
@@ -184,8 +182,8 @@ export const useOrders = (statusFilter = null) => {
         .single();
 
       if (error) throw error;
-      // Immediately refresh after placing
-      loadOrders();
+      // Optimistic: add the new order to local state instantly
+      setOrders(prev => [data, ...prev]);
       return data.id;
     } catch (err) {
       console.error('Error placing order:', err);
@@ -194,6 +192,13 @@ export const useOrders = (statusFilter = null) => {
   };
 
   const updateOrderStatus = async (orderId, newStatus, extraData = {}) => {
+    // Optimistic: update the order in local state INSTANTLY
+    setOrders(prev => prev.map(o =>
+      o.id === orderId
+        ? { ...o, status: newStatus, ...extraData, [`${newStatus}At`]: new Date().toISOString() }
+        : o
+    ));
+
     try {
       const updatePayload = {
         status: newStatus,
@@ -207,15 +212,22 @@ export const useOrders = (statusFilter = null) => {
         .eq('id', orderId);
 
       if (error) throw error;
-      // Immediately refresh after updating
-      loadOrders();
     } catch (err) {
       console.error('Error updating order status:', err);
+      // Revert on failure by refetching
+      loadOrders();
       throw err;
     }
   };
 
   const approveOrderAndAssignToken = async (orderId) => {
+    // Optimistic: immediately move to approved with a placeholder token
+    setOrders(prev => prev.map(o =>
+      o.id === orderId
+        ? { ...o, status: 'approved', tokenNumber: '...', approvedAt: new Date().toISOString() }
+        : o
+    ));
+
     try {
       const { data: tokenNumber, error: rpcError } = await supabase
         .rpc('get_next_token');
@@ -234,10 +246,17 @@ export const useOrders = (statusFilter = null) => {
         .eq('id', orderId);
 
       if (error) throw error;
-      // Immediately refresh after approving
-      loadOrders();
+
+      // Update local state with the real token number
+      setOrders(prev => prev.map(o =>
+        o.id === orderId
+          ? { ...o, tokenNumber: tokenNumber }
+          : o
+      ));
     } catch (err) {
       console.error('Error approving order:', err);
+      // Revert on failure
+      loadOrders();
       throw err;
     }
   };
