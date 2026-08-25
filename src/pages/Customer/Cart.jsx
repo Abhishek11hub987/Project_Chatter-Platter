@@ -32,7 +32,6 @@ const Cart = ({ onBack, onOrderPlaced }) => {
           subtotal: i.subtotal
         })),
         totalAmount,
-        customerSessionId: navigator.userAgent + Date.now(), // Simple session tracking
       });
       
       setActiveOrderId(orderId);
