@@ -49,6 +49,12 @@ const Dashboard = () => {
           <div className="text-center mt-20 flex flex-col items-center justify-center space-y-4">
             <h2 className="text-xl font-bold">Unauthorized Role</h2>
             <p className="text-gray-500">Your account does not have a recognized staff role.</p>
+            <button 
+              onClick={handleLogout}
+              className="mt-6 px-6 py-2 bg-black text-white font-bold rounded-lg shadow-md hover:bg-gray-800 transition-colors"
+            >
+              Sign out & Try Another Account
+            </button>
           </div>
         );
     }
