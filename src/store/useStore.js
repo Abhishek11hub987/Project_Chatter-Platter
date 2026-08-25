@@ -1,6 +1,9 @@
 import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
 
-const useStore = create((set) => ({
+const useStore = create(
+  persist(
+    (set) => ({
   // Customer State
   tableNumber: null,
   setTableNumber: (table) => set({ tableNumber: table }),
@@ -52,6 +55,16 @@ const useStore = create((set) => ({
   isAuthenticated: false,
   login: () => set({ isAuthenticated: true }),
   logout: () => set({ isAuthenticated: false }),
-}));
+    }),
+    {
+      name: 'chatter-platter-storage', // unique name
+      partialize: (state) => ({ 
+        cart: state.cart, 
+        tableNumber: state.tableNumber,
+        activeOrderId: state.activeOrderId
+      }),
+    }
+  )
+);
 
 export default useStore;
