@@ -39,7 +39,7 @@ const Cart = ({ onBack, onOrderPlaced }) => {
       onOrderPlaced();
     } catch (error) {
       console.error("Failed to place order:", error);
-      alert("Failed to place order. Please try again.");
+      alert("Error placing order: " + (error.message || JSON.stringify(error)));
       setIsPlacing(false);
     }
   };
