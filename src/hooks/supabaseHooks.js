@@ -125,42 +125,47 @@ export const useOrders = (statusFilter = null) => {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const loadOrders = async () => {
-      try {
-        let query = supabase
-          .from('orders')
-          .select('*')
-          .order('createdAt', { ascending: false });
+  const loadOrders = async () => {
+    try {
+      let query = supabase
+        .from('orders')
+        .select('*')
+        .order('createdAt', { ascending: false });
 
-        if (statusFilter) {
-          if (Array.isArray(statusFilter)) {
-            query = query.in('status', statusFilter);
-          } else {
-            query = query.eq('status', statusFilter);
-          }
+      if (statusFilter) {
+        if (Array.isArray(statusFilter)) {
+          query = query.in('status', statusFilter);
+        } else {
+          query = query.eq('status', statusFilter);
         }
-
-        const { data, error } = await query;
-        if (error) throw error;
-        setOrders(data || []);
-      } catch (err) {
-        console.error('Error fetching orders:', err);
-      } finally {
-        setLoading(false);
       }
-    };
 
+      const { data, error } = await query;
+      if (error) throw error;
+      setOrders(data || []);
+    } catch (err) {
+      console.error('Error fetching orders:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
     loadOrders();
 
+    // Realtime subscription (may not work if Realtime isn't enabled for the table)
     const channel = supabase.channel(`orders_changes_${Date.now()}`)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, (payload) => {
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, () => {
         loadOrders();
       })
       .subscribe();
 
+    // Polling fallback: refresh every 3 seconds to guarantee updates
+    const pollInterval = setInterval(loadOrders, 3000);
+
     return () => {
       supabase.removeChannel(channel);
+      clearInterval(pollInterval);
     };
   }, [statusFilter]);
 
@@ -179,6 +184,8 @@ export const useOrders = (statusFilter = null) => {
         .single();
 
       if (error) throw error;
+      // Immediately refresh after placing
+      loadOrders();
       return data.id;
     } catch (err) {
       console.error('Error placing order:', err);
@@ -200,6 +207,8 @@ export const useOrders = (statusFilter = null) => {
         .eq('id', orderId);
 
       if (error) throw error;
+      // Immediately refresh after updating
+      loadOrders();
     } catch (err) {
       console.error('Error updating order status:', err);
       throw err;
@@ -208,7 +217,6 @@ export const useOrders = (statusFilter = null) => {
 
   const approveOrderAndAssignToken = async (orderId) => {
     try {
-      // We will call a Postgres RPC function to safely increment the token number
       const { data: tokenNumber, error: rpcError } = await supabase
         .rpc('get_next_token');
 
@@ -226,13 +234,17 @@ export const useOrders = (statusFilter = null) => {
         .eq('id', orderId);
 
       if (error) throw error;
+      // Immediately refresh after approving
+      loadOrders();
     } catch (err) {
       console.error('Error approving order:', err);
       throw err;
     }
   };
 
-  return { orders, loading, placeOrder, updateOrderStatus, approveOrderAndAssignToken };
+  const refetch = () => loadOrders();
+
+  return { orders, loading, placeOrder, updateOrderStatus, approveOrderAndAssignToken, refetch };
 };
 
 export const useOrder = (orderId) => {
@@ -266,13 +278,17 @@ export const useOrder = (orderId) => {
     loadOrder();
 
     const channel = supabase.channel(`order_${orderId}_${Date.now()}`)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'orders', filter: `id=eq.${orderId}` }, (payload) => {
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'orders', filter: `id=eq.${orderId}` }, () => {
         loadOrder();
       })
       .subscribe();
 
+    // Polling fallback: refresh every 3 seconds
+    const pollInterval = setInterval(loadOrder, 3000);
+
     return () => {
       supabase.removeChannel(channel);
+      clearInterval(pollInterval);
     };
   }, [orderId]);
 
