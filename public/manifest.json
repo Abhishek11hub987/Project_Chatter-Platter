@@ -1,0 +1,17 @@
+{
+  "name": "Chatter & Platter",
+  "short_name": "C&P Cafe",
+  "description": "Chatter & Platter Ordering System",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#FFC107",
+  "theme_color": "#FFC107",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

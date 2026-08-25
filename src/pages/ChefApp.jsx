@@ -151,7 +151,7 @@ const ChefApp = () => {
       <div className={`${bgColor} p-3 sm:p-4 text-center font-black text-base sm:text-xl uppercase tracking-widest shrink-0`}>
         {title} ({columnOrders.length})
       </div>
-      <div className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-3 sm:space-y-4 hide-scrollbar">
+      <div className={`flex-1 overflow-y-auto p-3 sm:p-4 hide-scrollbar ${columnOrders.length === 0 ? 'flex items-center justify-center' : 'space-y-3 sm:space-y-4'}`}>
         <AnimatePresence>
           {columnOrders.map(order => (
             <ChefOrderCard 
@@ -165,7 +165,7 @@ const ChefApp = () => {
           ))}
         </AnimatePresence>
         {columnOrders.length === 0 && (
-          <div className="text-center text-gray-600 py-10 font-bold">No orders</div>
+          <div className="text-center text-gray-600 font-bold">No orders</div>
         )}
       </div>
     </div>

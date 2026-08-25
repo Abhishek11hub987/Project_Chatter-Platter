@@ -11,6 +11,7 @@ const Dashboard = () => {
   const { user, role, loading, logout } = useAuth();
   const navigate = useNavigate();
   const [viewAs, setViewAs] = useState(null);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -55,20 +56,49 @@ const Dashboard = () => {
               </span>
             </div>
             
-            <div className="flex items-center gap-2">
-              <div className="flex items-center gap-1.5 bg-gray-900 border border-gray-700 px-2 py-1 rounded-lg">
+            <div className="flex items-center gap-2 relative">
+              <div 
+                className="flex items-center gap-1.5 bg-gray-900 border border-gray-700 px-2 py-1 rounded-lg cursor-pointer"
+                onClick={() => setDropdownOpen(!dropdownOpen)}
+              >
                 <MonitorSmartphone className="w-3 h-3 text-gray-500" />
-                <select 
-                  value={viewAs} 
-                  onChange={(e) => setViewAs(e.target.value)}
-                  className="bg-transparent text-xs font-bold text-gray-300 outline-none cursor-pointer"
-                >
-                  {role === 'admin' && <option value="admin">Admin</option>}
-                  <option value="owner">Owner</option>
-                  <option value="chef">Chef</option>
-                  <option value="reception">Reception</option>
-                </select>
+                <span className="text-xs font-bold text-gray-300 select-none capitalize">
+                  {viewAs}
+                </span>
               </div>
+              
+              {/* Custom Dropdown Menu */}
+              {dropdownOpen && (
+                <div className="absolute top-full mt-1 right-8 bg-gray-900 border border-gray-700 rounded-lg shadow-xl overflow-hidden min-w-[120px] z-50">
+                  {role === 'admin' && (
+                    <button 
+                      className="w-full text-left px-3 py-2 text-xs font-bold text-gray-300 hover:bg-gray-800 hover:text-white transition-colors"
+                      onClick={() => { setViewAs('admin'); setDropdownOpen(false); }}
+                    >
+                      Admin
+                    </button>
+                  )}
+                  <button 
+                    className="w-full text-left px-3 py-2 text-xs font-bold text-gray-300 hover:bg-gray-800 hover:text-white transition-colors"
+                    onClick={() => { setViewAs('owner'); setDropdownOpen(false); }}
+                  >
+                    Owner
+                  </button>
+                  <button 
+                    className="w-full text-left px-3 py-2 text-xs font-bold text-gray-300 hover:bg-gray-800 hover:text-white transition-colors"
+                    onClick={() => { setViewAs('chef'); setDropdownOpen(false); }}
+                  >
+                    Chef
+                  </button>
+                  <button 
+                    className="w-full text-left px-3 py-2 text-xs font-bold text-gray-300 hover:bg-gray-800 hover:text-white transition-colors"
+                    onClick={() => { setViewAs('reception'); setDropdownOpen(false); }}
+                  >
+                    Reception
+                  </button>
+                </div>
+              )}
+
               <button 
                 onClick={handleLogout}
                 className="text-gray-500 hover:text-white p-1.5 rounded-lg transition-colors"
@@ -81,7 +111,7 @@ const Dashboard = () => {
         )}
 
         {/* Full screen content */}
-        <div className="flex-1 flex flex-col overflow-hidden">
+        <div className="flex-1 flex flex-col overflow-hidden" onClick={() => setDropdownOpen(false)}>
           {viewAs === 'chef' ? <ChefApp /> : <ReceptionApp />}
         </div>
       </div>
@@ -126,18 +156,48 @@ const Dashboard = () => {
           
           <div className="flex items-center gap-2 sm:gap-4">
             {(role === 'owner' || role === 'admin') && (
-              <div className="flex items-center gap-1.5 sm:gap-2 bg-gray-50 border px-2 sm:px-3 py-1 sm:py-1.5 rounded-xl">
-                <MonitorSmartphone className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-gray-500" />
-                <select 
-                  value={viewAs} 
-                  onChange={(e) => setViewAs(e.target.value)}
-                  className="bg-transparent text-xs sm:text-sm font-bold text-gray-700 outline-none cursor-pointer"
+              <div className="relative">
+                <div 
+                  className="flex items-center gap-1.5 sm:gap-2 bg-gray-50 border px-2 sm:px-3 py-1 sm:py-1.5 rounded-xl cursor-pointer"
+                  onClick={() => setDropdownOpen(!dropdownOpen)}
                 >
-                  {role === 'admin' && <option value="admin">Admin View</option>}
-                  <option value="owner">Owner View</option>
-                  <option value="chef">Chef View</option>
-                  <option value="reception">Reception View</option>
-                </select>
+                  <MonitorSmartphone className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-gray-500" />
+                  <span className="text-xs sm:text-sm font-bold text-gray-700 select-none capitalize">
+                    {viewAs} View
+                  </span>
+                </div>
+
+                {/* Custom Dropdown Menu */}
+                {dropdownOpen && (
+                  <div className="absolute top-full mt-2 right-0 bg-white border border-gray-100 rounded-xl shadow-xl overflow-hidden min-w-[150px] z-50">
+                    {role === 'admin' && (
+                      <button 
+                        className="w-full text-left px-4 py-2.5 text-sm font-bold text-gray-700 hover:bg-gray-50 transition-colors"
+                        onClick={() => { setViewAs('admin'); setDropdownOpen(false); }}
+                      >
+                        Admin View
+                      </button>
+                    )}
+                    <button 
+                      className="w-full text-left px-4 py-2.5 text-sm font-bold text-gray-700 hover:bg-gray-50 transition-colors"
+                      onClick={() => { setViewAs('owner'); setDropdownOpen(false); }}
+                    >
+                      Owner View
+                    </button>
+                    <button 
+                      className="w-full text-left px-4 py-2.5 text-sm font-bold text-gray-700 hover:bg-gray-50 transition-colors"
+                      onClick={() => { setViewAs('chef'); setDropdownOpen(false); }}
+                    >
+                      Chef View
+                    </button>
+                    <button 
+                      className="w-full text-left px-4 py-2.5 text-sm font-bold text-gray-700 hover:bg-gray-50 transition-colors"
+                      onClick={() => { setViewAs('reception'); setDropdownOpen(false); }}
+                    >
+                      Reception View
+                    </button>
+                  </div>
+                )}
               </div>
             )}
 
