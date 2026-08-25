@@ -62,82 +62,100 @@ const Login = () => {
         <motion.div
           initial={{ scale: 0.9, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
-          className="bg-white p-6 sm:p-8 rounded-3xl shadow-xl max-w-sm w-full space-y-5"
+          className="bg-white p-6 sm:p-8 rounded-3xl shadow-xl max-w-sm w-full"
         >
-          <div className="w-16 h-16 bg-[#FFC107] rounded-2xl flex items-center justify-center mx-auto shadow-inner">
-            <Download className="w-8 h-8 text-black" />
+          {/* Header */}
+          <div className="text-center mb-6">
+            <div className="w-16 h-16 bg-[#FFC107] rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
+              <Download className="w-8 h-8 text-black" />
+            </div>
+            <h1 className="text-xl sm:text-2xl font-black">Install Staff App</h1>
+            <p className="text-gray-400 font-medium text-xs mt-1">
+              For the best experience on your device
+            </p>
           </div>
-          <h1 className="text-xl sm:text-2xl font-black text-center">Install Staff App</h1>
-          <p className="text-gray-500 font-medium text-sm text-center">
-            Install Chatter & Platter as an app on your device for the best experience.
-          </p>
-          
-          {/* Install for Android/Chrome */}
+
+          {/* One-click install for supported browsers */}
           {deferredPrompt && (
-            <button
-              onClick={handleInstall}
-              className="w-full py-3.5 bg-black text-white font-bold rounded-2xl shadow-lg active:scale-95 transition-transform flex items-center justify-center gap-2"
-            >
-              <Download className="w-5 h-5" />
-              Install App Now
-            </button>
-          )}
-
-          {/* iOS Guide */}
-          {isIOS && (
-            <div className="bg-gray-50 rounded-2xl p-4 space-y-3">
-              <div className="flex items-center gap-2">
-                <Apple className="w-5 h-5" />
-                <span className="font-bold text-sm">iPhone / iPad Instructions</span>
-              </div>
-              <ol className="text-xs text-gray-600 space-y-2 font-medium">
-                <li className="flex items-start gap-2">
-                  <span className="bg-black text-white w-5 h-5 rounded-full flex items-center justify-center shrink-0 text-[10px] font-black">1</span>
-                  Tap the <strong>Share</strong> button (box with arrow) at the bottom of Safari
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="bg-black text-white w-5 h-5 rounded-full flex items-center justify-center shrink-0 text-[10px] font-black">2</span>
-                  Scroll down and tap <strong>"Add to Home Screen"</strong>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="bg-black text-white w-5 h-5 rounded-full flex items-center justify-center shrink-0 text-[10px] font-black">3</span>
-                  Tap <strong>"Add"</strong> — then open the app from your home screen
-                </li>
-              </ol>
+            <div className="mb-5">
+              <button
+                onClick={handleInstall}
+                className="w-full py-4 bg-black text-white font-bold rounded-2xl shadow-lg active:scale-95 transition-transform flex items-center justify-center gap-2 text-sm"
+              >
+                <Download className="w-5 h-5" />
+                Install App Now
+              </button>
+              <p className="text-center text-gray-400 text-[10px] mt-2 font-medium">One-click install available</p>
             </div>
           )}
 
-          {/* Android Guide (when no deferredPrompt) */}
-          {!isIOS && !deferredPrompt && (
-            <div className="bg-gray-50 rounded-2xl p-4 space-y-3">
-              <div className="flex items-center gap-2">
-                <Smartphone className="w-5 h-5" />
-                <span className="font-bold text-sm">How to Install</span>
-              </div>
-              <ol className="text-xs text-gray-600 space-y-2 font-medium">
-                <li className="flex items-start gap-2">
-                  <span className="bg-black text-white w-5 h-5 rounded-full flex items-center justify-center shrink-0 text-[10px] font-black">1</span>
-                  Open this page in <strong>Chrome</strong> browser
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="bg-black text-white w-5 h-5 rounded-full flex items-center justify-center shrink-0 text-[10px] font-black">2</span>
-                  Tap the <strong>3-dot menu (⋮)</strong> at the top right
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="bg-black text-white w-5 h-5 rounded-full flex items-center justify-center shrink-0 text-[10px] font-black">3</span>
-                  Tap <strong>"Install app"</strong> or <strong>"Add to Home screen"</strong>
-                </li>
-              </ol>
-            </div>
-          )}
-          
+          {/* Step-by-step guide */}
+          <div className="space-y-3 mb-5">
+            <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">
+              {isIOS ? '📱 iPhone / iPad' : '📱 Manual Install Steps'}
+            </p>
+
+            {isIOS ? (
+              <>
+                <div className="flex items-center gap-3 bg-gray-50 p-3 rounded-xl">
+                  <div className="w-8 h-8 bg-black text-white rounded-lg flex items-center justify-center shrink-0 font-black text-sm">1</div>
+                  <p className="text-sm text-gray-700 font-medium">
+                    Tap the <strong className="text-black">Share ↑</strong> button at the bottom of Safari
+                  </p>
+                </div>
+                <div className="flex items-center gap-3 bg-gray-50 p-3 rounded-xl">
+                  <div className="w-8 h-8 bg-black text-white rounded-lg flex items-center justify-center shrink-0 font-black text-sm">2</div>
+                  <p className="text-sm text-gray-700 font-medium">
+                    Tap <strong className="text-black">"Add to Home Screen"</strong>
+                  </p>
+                </div>
+                <div className="flex items-center gap-3 bg-gray-50 p-3 rounded-xl">
+                  <div className="w-8 h-8 bg-black text-white rounded-lg flex items-center justify-center shrink-0 font-black text-sm">3</div>
+                  <p className="text-sm text-gray-700 font-medium">
+                    Tap <strong className="text-black">"Add"</strong> and open from Home Screen
+                  </p>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="flex items-center gap-3 bg-gray-50 p-3 rounded-xl">
+                  <div className="w-8 h-8 bg-black text-white rounded-lg flex items-center justify-center shrink-0 font-black text-sm">1</div>
+                  <p className="text-sm text-gray-700 font-medium">
+                    Open this page in <strong className="text-black">Chrome</strong>
+                  </p>
+                </div>
+                <div className="flex items-center gap-3 bg-gray-50 p-3 rounded-xl">
+                  <div className="w-8 h-8 bg-black text-white rounded-lg flex items-center justify-center shrink-0 font-black text-sm">2</div>
+                  <p className="text-sm text-gray-700 font-medium">
+                    Tap <strong className="text-black">⋮ menu</strong> (top right corner)
+                  </p>
+                </div>
+                <div className="flex items-center gap-3 bg-gray-50 p-3 rounded-xl">
+                  <div className="w-8 h-8 bg-black text-white rounded-lg flex items-center justify-center shrink-0 font-black text-sm">3</div>
+                  <p className="text-sm text-gray-700 font-medium">
+                    Tap <strong className="text-black">"Install app"</strong> or <strong className="text-black">"Add to Home screen"</strong>
+                  </p>
+                </div>
+              </>
+            )}
+          </div>
+
+          {/* Divider */}
+          <div className="flex items-center gap-3 mb-4">
+            <div className="flex-1 h-px bg-gray-100"></div>
+            <span className="text-[10px] text-gray-300 font-bold uppercase">or</span>
+            <div className="flex-1 h-px bg-gray-100"></div>
+          </div>
+
           <button
             onClick={() => setIsStandalone(true)}
-            className="w-full text-xs text-gray-400 font-bold hover:text-black underline transition-colors py-2"
+            className="w-full py-3 bg-gray-100 text-gray-600 font-bold rounded-2xl hover:bg-gray-200 transition-colors text-sm"
           >
-            Skip — Continue in browser
+            Continue in Browser →
           </button>
         </motion.div>
+      </div>
+    );
       </div>
     );
   }
