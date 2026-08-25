@@ -19,8 +19,8 @@ const Tracker = ({ onFeedback, onBackToMenu }) => {
       if (order.status === 'ready' && prevStatus !== null) {
         playChime();
         setShowReadyBanner(true);
-        if (Notification.permission === 'granted') {
-          new Notification('Your Order is Ready!', { body: `Token #${order.tokenNumber}` });
+        if ('Notification' in window && window.Notification.permission === 'granted') {
+          new window.Notification('Your Order is Ready!', { body: `Token #${order.tokenNumber}` });
         }
       }
       setPrevStatus(order.status);
@@ -36,8 +36,8 @@ const Tracker = ({ onFeedback, onBackToMenu }) => {
 
   // Request notification permission
   useEffect(() => {
-    if ('Notification' in window && Notification.permission === 'default') {
-      Notification.requestPermission();
+    if ('Notification' in window && window.Notification.permission === 'default') {
+      window.Notification.requestPermission();
     }
   }, []);
 

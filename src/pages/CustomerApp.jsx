@@ -7,6 +7,7 @@ import Cart from './Customer/Cart';
 import Tracker from './Customer/Tracker';
 import Feedback from './Customer/Feedback';
 import { useOrder } from '../hooks/supabaseHooks';
+import ErrorBoundary from '../components/ErrorBoundary';
 
 const AnimatedPage = ({ children, keyName }) => (
   <motion.div
@@ -39,6 +40,7 @@ const CustomerApp = () => {
 
   // Mobile wrapper simulation
   return (
+    <ErrorBoundary>
     <div className="flex justify-center items-center min-h-screen bg-gray-900 w-full overflow-hidden">
       <div className="relative w-full max-w-[430px] h-screen max-h-screen bg-background shadow-2xl overflow-hidden md:h-[90vh] md:rounded-[3rem] md:border-[8px] md:border-gray-800">
         <AnimatePresence mode="wait">
@@ -80,6 +82,7 @@ const CustomerApp = () => {
         </AnimatePresence>
       </div>
     </div>
+    </ErrorBoundary>
   );
 };
 
