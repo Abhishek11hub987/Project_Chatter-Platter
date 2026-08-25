@@ -49,18 +49,6 @@ const Dashboard = () => {
           <div className="text-center mt-20 flex flex-col items-center justify-center space-y-4">
             <h2 className="text-xl font-bold">Unauthorized Role</h2>
             <p className="text-gray-500">Your account does not have a recognized staff role.</p>
-            <div className="p-6 bg-yellow-50 border border-yellow-200 rounded-2xl max-w-md mt-8">
-              <h3 className="font-bold text-yellow-800 mb-2">Developer Testing Mode</h3>
-              <p className="text-sm text-yellow-700 mb-4">
-                It looks like your Supabase Database is blocking your account (likely due to RLS permissions or a missing role insert). Click below to bypass this security check temporarily.
-              </p>
-              <button 
-                onClick={() => setViewAs('owner')}
-                className="px-6 py-3 bg-black text-white font-bold rounded-xl shadow-lg hover:scale-105 transition-all"
-              >
-                Force Enter as Owner
-              </button>
-            </div>
           </div>
         );
     }
@@ -82,7 +70,7 @@ const Dashboard = () => {
           </div>
           
           <div className="flex items-center gap-4">
-            {(role === 'owner' || viewAs) && (
+            {role === 'owner' && (
               <div className="flex items-center gap-2 bg-gray-50 border px-3 py-1.5 rounded-xl">
                 <MonitorSmartphone className="w-4 h-4 text-gray-500" />
                 <select 
