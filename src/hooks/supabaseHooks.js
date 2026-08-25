@@ -107,7 +107,7 @@ export const useMenu = () => {
     loadMenu();
 
     // Subscribe to realtime updates
-    const channel = supabase.channel('menu_changes')
+    const channel = supabase.channel(`menu_changes_${Date.now()}`)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'menu' }, (payload) => {
         loadMenu();
       })
@@ -153,7 +153,7 @@ export const useOrders = (statusFilter = null) => {
 
     loadOrders();
 
-    const channel = supabase.channel('orders_changes')
+    const channel = supabase.channel(`orders_changes_${Date.now()}`)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, (payload) => {
         loadOrders();
       })
@@ -265,7 +265,7 @@ export const useOrder = (orderId) => {
 
     loadOrder();
 
-    const channel = supabase.channel(`order_${orderId}`)
+    const channel = supabase.channel(`order_${orderId}_${Date.now()}`)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'orders', filter: `id=eq.${orderId}` }, (payload) => {
         loadOrder();
       })
