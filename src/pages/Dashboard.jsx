@@ -76,7 +76,7 @@ const Dashboard = () => {
           </div>
           
           <div className="flex items-center gap-4">
-            {role === 'owner' && (
+            {(role === 'owner' || role === 'admin') && (
               <div className="flex items-center gap-2 bg-gray-50 border px-3 py-1.5 rounded-xl">
                 <MonitorSmartphone className="w-4 h-4 text-gray-500" />
                 <select 
@@ -84,8 +84,8 @@ const Dashboard = () => {
                   onChange={(e) => setViewAs(e.target.value)}
                   className="bg-transparent text-sm font-bold text-gray-700 outline-none cursor-pointer"
                 >
+                  {role === 'admin' && <option value="admin">Admin View</option>}
                   <option value="owner">Owner View</option>
-                  <option value="admin">Admin View</option>
                   <option value="chef">Chef View</option>
                   <option value="reception">Reception View</option>
                 </select>
