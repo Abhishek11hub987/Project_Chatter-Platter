@@ -13,7 +13,11 @@ const Login = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const isPwa = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+    // In development mode, we bypass the install check so you can test easily.
+    // In production, it requires standalone (installed) mode.
+    const isInstalled = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+    const isPwa = import.meta.env.DEV || isInstalled;
+    
     setIsStandalone(isPwa);
 
     const handleBeforeInstallPrompt = (e) => {
@@ -72,6 +76,13 @@ const Login = () => {
           >
             <Download className="w-5 h-5" />
             {deferredPrompt ? 'Download & Install App' : 'How to Install'}
+          </button>
+          
+          <button
+            onClick={() => setIsStandalone(true)}
+            className="text-xs text-gray-400 font-bold hover:text-black underline mt-4 transition-colors"
+          >
+            Continue in browser for testing
           </button>
         </motion.div>
       </div>
