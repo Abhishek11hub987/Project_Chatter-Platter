@@ -23,7 +23,7 @@ const Cart = ({ onBack, onOrderPlaced }) => {
     setIsPlacing(true);
     try {
       const orderId = await placeOrder({
-        tableNumber: tableNumber,
+        tableNumber: tableNumber || "Takeaway",
         items: cart.map(i => ({
           itemId: i.itemId,
           name: i.name,
