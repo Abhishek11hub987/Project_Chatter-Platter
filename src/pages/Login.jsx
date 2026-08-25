@@ -8,22 +8,39 @@ const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isStandalone, setIsStandalone] = useState(true);
+  const [deferredPrompt, setDeferredPrompt] = useState(null);
   const { login, loading, error, user, role } = useAuth();
   const navigate = useNavigate();
 
-  // Check if app is installed as PWA
   useEffect(() => {
     const isPwa = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
     setIsStandalone(isPwa);
 
-    // If user is already logged in, redirect them to their dashboard
+    const handleBeforeInstallPrompt = (e) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+      setIsStandalone(false); // Force show install screen if they haven't installed
+    };
+
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+
     if (user && role) {
       navigate('/dashboard');
     }
+
+    return () => window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
   }, [user, role, navigate]);
 
-  const handleInstall = () => {
-    alert("To install the app: \nOn iOS: Tap the Share button and select 'Add to Home Screen'. \nOn Android/Chrome: Tap the menu and select 'Install app'.");
+  const handleInstall = async () => {
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      if (outcome === 'accepted') {
+        setDeferredPrompt(null);
+      }
+    } else {
+      alert("Direct install is not supported on this browser (e.g. Safari on iOS).\n\nTo install manually:\n1. Tap the Share button at the bottom.\n2. Scroll down and select 'Add to Home Screen'.");
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -46,14 +63,15 @@ const Login = () => {
             <Download className="w-10 h-10 text-black" />
           </div>
           <h1 className="text-2xl font-black">Install Required</h1>
-          <p className="text-gray-600 font-medium">
+          <p className="text-gray-600 font-medium text-sm">
             For security reasons, the staff portal can only be accessed by installing this app to your device.
           </p>
           <button
             onClick={handleInstall}
-            className="w-full py-4 bg-black text-white font-bold rounded-2xl shadow-lg active:scale-95 transition-transform"
+            className="w-full py-4 bg-black text-white font-bold rounded-2xl shadow-lg active:scale-95 transition-transform flex items-center justify-center gap-2"
           >
-            How to Install
+            <Download className="w-5 h-5" />
+            {deferredPrompt ? 'Download & Install App' : 'How to Install'}
           </button>
         </motion.div>
       </div>

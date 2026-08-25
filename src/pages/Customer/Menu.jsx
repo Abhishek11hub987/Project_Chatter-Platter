@@ -5,7 +5,6 @@ import useStore from '../../store/useStore';
 import { useMenu } from '../../hooks/supabaseHooks';
 import MenuCard from '../../components/MenuCard';
 import CartBar from '../../components/CartBar';
-import { seedMenu } from '../../data/seedMenu';
 
 const CATEGORIES = ['HOT', 'COLD', 'MOMO', 'FRIES', 'PASTA', 'MAGGI', 'SANDWICH'];
 
@@ -76,11 +75,10 @@ const Menu = ({ onCartClick, onTrackerClick, onBackClick }) => {
             <p className="text-gray-500 font-medium">Loading deliciousness...</p>
           </div>
         ) : menu.length === 0 ? (
-          <div className="flex flex-col justify-center items-center h-48 space-y-4 text-center">
-            <p className="text-gray-500 font-medium">Menu is empty.</p>
-            <button onClick={seedMenu} className="btn-primary mt-4 text-xs py-2 px-4">
-              Seed Demo Data
-            </button>
+          <div className="flex flex-col justify-center items-center h-48 space-y-4 text-center px-6">
+            <p className="text-gray-500 font-medium text-sm">
+              The menu is currently empty or loading.
+            </p>
           </div>
         ) : (
           <motion.div 
