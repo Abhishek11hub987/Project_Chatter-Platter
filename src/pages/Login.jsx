@@ -191,6 +191,7 @@ const Login = () => {
                 className="w-full pl-11 sm:pl-12 pr-4 py-3.5 sm:py-4 bg-gray-50 rounded-2xl border-none focus:ring-2 focus:ring-black outline-none font-medium transition-all text-sm sm:text-base"
                 placeholder="admin@chatter.com"
                 required
+                maxLength="128"
                 autoComplete="email"
               />
             </div>
@@ -207,6 +208,7 @@ const Login = () => {
                 className="w-full pl-11 sm:pl-12 pr-12 py-3.5 sm:py-4 bg-gray-50 rounded-2xl border-none focus:ring-2 focus:ring-black outline-none font-medium transition-all text-sm sm:text-base"
                 placeholder="••••••••"
                 required
+                maxLength="128"
                 autoComplete="current-password"
               />
               <button
