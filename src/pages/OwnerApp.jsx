@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../supabase';
-import { TrendingUp, DollarSign, ShoppingBag, CreditCard, Banknote, Calendar, BarChart3 } from 'lucide-react';
+import { TrendingUp, DollarSign, CreditCard, Banknote, Calendar, BarChart3 } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Legend } from 'recharts';
 
 const OwnerApp = () => {
@@ -99,43 +99,43 @@ const OwnerApp = () => {
   }, []);
 
   const StatCard = ({ title, rev, orders, cash, online, icon: Icon, color }) => (
-    <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 flex flex-col gap-4">
+    <div className="bg-white p-4 sm:p-6 rounded-2xl sm:rounded-3xl shadow-sm border border-gray-100 flex flex-col gap-3 sm:gap-4">
       <div className="flex justify-between items-start">
-        <div>
-          <p className="text-sm font-bold text-gray-500 uppercase tracking-wide flex items-center gap-2">
-            <Icon className={`w-4 h-4 ${color.text}`} />
-            {title}
+        <div className="min-w-0 flex-1">
+          <p className="text-[11px] sm:text-sm font-bold text-gray-500 uppercase tracking-wide flex items-center gap-1.5 sm:gap-2">
+            <Icon className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${color.text} shrink-0`} />
+            <span className="truncate">{title}</span>
           </p>
-          <p className="text-3xl font-black mt-2">₹{rev.toFixed(0)}</p>
-          <p className="text-xs text-gray-400 font-bold mt-1">{orders} Total Orders</p>
+          <p className="text-2xl sm:text-3xl font-black mt-1.5 sm:mt-2">₹{rev.toFixed(0)}</p>
+          <p className="text-[10px] sm:text-xs text-gray-400 font-bold mt-0.5 sm:mt-1">{orders} Total Orders</p>
         </div>
-        <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${color.bg}`}>
-          <Icon className={`w-6 h-6 ${color.icon}`} />
+        <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl flex items-center justify-center ${color.bg} shrink-0`}>
+          <Icon className={`w-5 h-5 sm:w-6 sm:h-6 ${color.icon}`} />
         </div>
       </div>
       
       {/* Payment Split */}
-      <div className="pt-4 border-t flex items-center justify-between text-sm font-bold">
-        <div className="flex items-center gap-1.5 text-gray-600">
-          <Banknote className="w-4 h-4 text-green-500" />
-          <span>Cash: ₹{cash.toFixed(0)}</span>
+      <div className="pt-3 sm:pt-4 border-t flex items-center justify-between text-xs sm:text-sm font-bold gap-2">
+        <div className="flex items-center gap-1 sm:gap-1.5 text-gray-600">
+          <Banknote className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-green-500 shrink-0" />
+          <span className="truncate">Cash: ₹{cash.toFixed(0)}</span>
         </div>
-        <div className="flex items-center gap-1.5 text-gray-600">
-          <CreditCard className="w-4 h-4 text-blue-500" />
-          <span>Online: ₹{online.toFixed(0)}</span>
+        <div className="flex items-center gap-1 sm:gap-1.5 text-gray-600">
+          <CreditCard className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-blue-500 shrink-0" />
+          <span className="truncate">Online: ₹{online.toFixed(0)}</span>
         </div>
       </div>
     </div>
   );
 
   return (
-    <div className="p-4 sm:p-8 max-w-7xl mx-auto space-y-8">
+    <div className="p-3 sm:p-6 lg:p-8 max-w-7xl mx-auto space-y-5 sm:space-y-8">
       <div>
-        <h1 className="text-3xl font-black tracking-tight">Financial Overview</h1>
-        <p className="text-gray-500 font-medium mt-1">Track your cafe's growth and payment channels.</p>
+        <h1 className="text-2xl sm:text-3xl font-black tracking-tight">Financial Overview</h1>
+        <p className="text-gray-500 font-medium mt-0.5 sm:mt-1 text-sm sm:text-base">Track your cafe's growth and payment channels.</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 lg:gap-6">
         <StatCard 
           title="Today's Revenue" 
           rev={stats.todayRev}
@@ -165,33 +165,35 @@ const OwnerApp = () => {
         />
       </div>
 
-      <div className="bg-white p-6 sm:p-8 rounded-3xl shadow-sm border border-gray-100">
-        <div className="flex items-center gap-2 mb-8">
-          <TrendingUp className="w-5 h-5 text-gray-400" />
-          <h2 className="text-lg font-bold">Today's Hourly Sales (Cash vs Online)</h2>
+      <div className="bg-white p-4 sm:p-6 lg:p-8 rounded-2xl sm:rounded-3xl shadow-sm border border-gray-100">
+        <div className="flex items-center gap-2 mb-4 sm:mb-8">
+          <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400" />
+          <h2 className="text-sm sm:text-lg font-bold">Today's Hourly Sales (Cash vs Online)</h2>
         </div>
-        <div className="h-80 w-full">
+        <div className="h-52 sm:h-72 lg:h-80 w-full -ml-2 sm:ml-0">
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={chartData} margin={{ top: 20, right: 30, left: 0, bottom: 0 }}>
+            <BarChart data={chartData} margin={{ top: 10, right: 10, left: -15, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
               <XAxis 
                 dataKey="hour" 
                 axisLine={false}
                 tickLine={false}
-                tick={{fill: '#9ca3af', fontSize: 12}}
+                tick={{fill: '#9ca3af', fontSize: 10}}
                 dy={10}
+                interval="preserveStartEnd"
               />
               <YAxis 
                 axisLine={false}
                 tickLine={false}
-                tick={{fill: '#9ca3af', fontSize: 12}}
-                dx={-10}
+                tick={{fill: '#9ca3af', fontSize: 10}}
+                dx={-5}
+                width={35}
               />
               <Tooltip 
-                contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)', fontWeight: 'bold' }}
+                contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)', fontWeight: 'bold', fontSize: '12px' }}
                 cursor={{ fill: '#f9fafb' }}
               />
-              <Legend wrapperStyle={{ paddingTop: '20px', fontWeight: 'bold', fontSize: '14px' }} />
+              <Legend wrapperStyle={{ paddingTop: '12px', fontWeight: 'bold', fontSize: '12px' }} />
               <Bar dataKey="cash" name="Cash Sales" stackId="a" fill="#10B981" radius={[0, 0, 4, 4]} />
               <Bar dataKey="online" name="Online Sales" stackId="a" fill="#3B82F6" radius={[4, 4, 0, 0]} />
             </BarChart>
