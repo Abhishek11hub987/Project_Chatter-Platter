@@ -44,7 +44,8 @@ const OwnerApp = () => {
 
         orders.forEach(order => {
           const orderTime = new Date(order.createdAt).getTime();
-          const amount = Number(order.total) || 0;
+          // Bugfix: Cart payload passes 'totalAmount', not 'total'. Fallback to both just in case.
+          const amount = Number(order.totalAmount || order.total) || 0;
           const method = order.paymentMethod || 'cash'; // default to cash if missing
 
           // Yearly
@@ -97,6 +98,23 @@ const OwnerApp = () => {
     return () => clearInterval(interval);
   }, []);
 
+  const handleResetData = async () => {
+    if (window.confirm("WARNING: Are you absolutely sure you want to permanently delete ALL sales and order data? This cannot be undone!")) {
+      const password = window.prompt("Type 'RESET' to confirm deletion:");
+      if (password === 'RESET') {
+        try {
+          const { error } = await supabase.from('orders').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+          if (error) throw error;
+          alert("All sales data has been successfully reset for the new client!");
+          window.location.reload();
+        } catch (error) {
+          alert("Error resetting data. Did you run the SQL script to enable DELETE permissions?");
+          console.error(error);
+        }
+      }
+    }
+  };
+
   const StatCard = ({ title, rev, orders, cash, online, icon: Icon, color }) => (
     <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 flex flex-col gap-4">
       <div className="flex justify-between items-start">
@@ -129,9 +147,17 @@ const OwnerApp = () => {
 
   return (
     <div className="p-4 sm:p-8 max-w-7xl mx-auto space-y-8">
-      <div>
-        <h1 className="text-3xl font-black tracking-tight">Financial Overview</h1>
-        <p className="text-gray-500 font-medium mt-1">Track your cafe's growth and payment channels.</p>
+      <div className="flex justify-between items-end">
+        <div>
+          <h1 className="text-3xl font-black tracking-tight">Financial Overview</h1>
+          <p className="text-gray-500 font-medium mt-1">Track your cafe's growth and payment channels.</p>
+        </div>
+        <button 
+          onClick={handleResetData}
+          className="bg-red-50 text-red-600 hover:bg-red-100 px-4 py-2 rounded-xl font-bold text-sm transition-colors"
+        >
+          Reset All Data
+        </button>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
