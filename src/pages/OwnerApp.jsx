@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../supabase';
 import { useMenu } from '../hooks/supabaseHooks';
-import { TrendingUp, DollarSign, CreditCard, Banknote, Calendar, BarChart3, Star, Clock, PackageSearch } from 'lucide-react';
+import { TrendingUp, DollarSign, CreditCard, Banknote, Calendar, BarChart3, Star, Clock, PackageSearch, Download } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Legend } from 'recharts';
 
 const OwnerApp = () => {
@@ -138,6 +138,55 @@ const OwnerApp = () => {
     };
   }, []);
 
+  const handleExportData = async () => {
+    try {
+      // Fetch all orders
+      const { data: allOrders, error: ordersError } = await supabase
+        .from('orders')
+        .select('*')
+        .order('createdAt', { ascending: false });
+
+      if (ordersError) throw ordersError;
+
+      // Fetch all feedbacks
+      const { data: allFeedbacks, error: fbError } = await supabase
+        .from('feedbacks')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (fbError) throw fbError;
+
+      // Create CSV for Orders
+      let ordersCsv = "ID,Table,Status,Total Amount,Payment Method,IP Address,Created At,Items\n";
+      allOrders.forEach(order => {
+        const itemsStr = order.items ? order.items.map(i => `${i.qty}x ${i.name}`).join(' | ') : '';
+        ordersCsv += `${order.id},${order.tableNumber},${order.status},${order.totalAmount},${order.paymentMethod || 'cash'},${order.ip_address || ''},${new Date(order.createdAt).toLocaleString()},"${itemsStr}"\n`;
+      });
+
+      // Create CSV for Feedbacks
+      let feedbacksCsv = "\n\nID,Rating,Comment,Created At\n";
+      allFeedbacks.forEach(fb => {
+        const commentSafe = fb.comment ? fb.comment.replace(/"/g, '""') : '';
+        feedbacksCsv += `${fb.id},${fb.rating},"${commentSafe}",${new Date(fb.created_at).toLocaleString()}\n`;
+      });
+
+      // Trigger Download
+      const blob = new Blob([ordersCsv + feedbacksCsv], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement("a");
+      const url = URL.createObjectURL(blob);
+      link.setAttribute("href", url);
+      link.setAttribute("download", `Cafe_Data_Export_${new Date().toLocaleDateString().replace(/\//g, '-')}.csv`);
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+    } catch (err) {
+      console.error("Export failed:", err);
+      alert("Failed to export data");
+    }
+  };
+
   const StatCard = ({ title, rev, orders, cash, online, icon: Icon, color }) => (
     <div className="bg-white p-4 sm:p-6 rounded-2xl sm:rounded-3xl shadow-sm border border-gray-100 flex flex-col gap-3 sm:gap-4">
       <div className="flex justify-between items-start">
@@ -170,9 +219,18 @@ const OwnerApp = () => {
 
   return (
     <div className="p-3 sm:p-6 lg:p-8 max-w-7xl mx-auto space-y-5 sm:space-y-8 pb-16">
-      <div>
-        <h1 className="text-2xl sm:text-3xl font-black tracking-tight">Financial Overview</h1>
-        <p className="text-gray-500 font-medium mt-0.5 sm:mt-1 text-sm sm:text-base">Track your cafe's growth and payment channels.</p>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl sm:text-3xl font-black tracking-tight">Financial Overview</h1>
+          <p className="text-gray-500 font-medium mt-0.5 sm:mt-1 text-sm sm:text-base">Track your cafe's growth and payment channels.</p>
+        </div>
+        <button
+          onClick={handleExportData}
+          className="flex items-center justify-center gap-2 bg-primary text-black font-bold px-4 py-2.5 rounded-xl hover:bg-primary-dark active:scale-95 transition-transform"
+        >
+          <Download className="w-5 h-5" />
+          Export All Data (CSV)
+        </button>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 lg:gap-6">
