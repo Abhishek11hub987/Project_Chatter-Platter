@@ -79,9 +79,13 @@ const Welcome = ({ onNext }) => {
         >
           Browse Our Menu →
         </button>
-        <p className="text-center text-black/40 text-xs font-bold">
-          Scan • Order • Relax
-        </p>
+        <div className="flex items-center justify-center gap-2 text-black/40 text-[10px] font-bold">
+          <span>Scan • Order • Relax</span>
+          <span>•</span>
+          <a href="/login" className="hover:text-black/80 transition-colors cursor-pointer flex items-center gap-1">
+             Staff Access
+          </a>
+        </div>
       </motion.div>
     </div>
   );
