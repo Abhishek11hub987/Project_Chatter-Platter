@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../supabase';
-import { TrendingUp, DollarSign, CreditCard, Banknote, Calendar, BarChart3 } from 'lucide-react';
+import { TrendingUp, DollarSign, CreditCard, Banknote, Calendar, BarChart3, Star, Clock } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Legend } from 'recharts';
 
 const OwnerApp = () => {
@@ -10,6 +10,8 @@ const OwnerApp = () => {
     yearRev: 0, yearOrders: 0, yearCash: 0, yearOnline: 0
   });
   const [chartData, setChartData] = useState([]);
+  const [feedbacks, setFeedbacks] = useState([]);
+  const [recentCustomers, setRecentCustomers] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -22,6 +24,22 @@ const OwnerApp = () => {
           .in('status', ['delivered', 'completed']);
           
         if (error) throw error;
+
+        // Fetch recent feedbacks
+        const { data: fbData } = await supabase
+          .from('feedbacks')
+          .select('*')
+          .order('created_at', { ascending: false })
+          .limit(10);
+        setFeedbacks(fbData || []);
+
+        // Fetch recent customers
+        const { data: custData } = await supabase
+          .from('orders')
+          .select('*')
+          .order('createdAt', { ascending: false })
+          .limit(5);
+        setRecentCustomers(custData || []);
 
         const now = new Date();
         const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
@@ -129,7 +147,7 @@ const OwnerApp = () => {
   );
 
   return (
-    <div className="p-3 sm:p-6 lg:p-8 max-w-7xl mx-auto space-y-5 sm:space-y-8">
+    <div className="p-3 sm:p-6 lg:p-8 max-w-7xl mx-auto space-y-5 sm:space-y-8 pb-16">
       <div>
         <h1 className="text-2xl sm:text-3xl font-black tracking-tight">Financial Overview</h1>
         <p className="text-gray-500 font-medium mt-0.5 sm:mt-1 text-sm sm:text-base">Track your cafe's growth and payment channels.</p>
@@ -198,6 +216,63 @@ const OwnerApp = () => {
               <Bar dataKey="online" name="Online Sales" stackId="a" fill="#3B82F6" radius={[4, 4, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6 mt-8">
+        {/* Recent Feedbacks */}
+        <div className="bg-white p-4 sm:p-6 rounded-2xl sm:rounded-3xl shadow-sm border border-gray-100">
+          <div className="flex items-center gap-2 mb-4">
+            <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" />
+            <h2 className="text-sm sm:text-lg font-bold">Recent Customer Feedback</h2>
+          </div>
+          <div className="space-y-4">
+            {feedbacks.map(fb => (
+              <div key={fb.id} className="p-3 bg-gray-50 rounded-xl border border-gray-100">
+                <div className="flex items-center justify-between mb-1">
+                  <div className="flex text-yellow-500">
+                    {[...Array(5)].map((_, i) => (
+                      <Star key={i} className={`w-3 h-3 ${i < fb.rating ? 'fill-yellow-500' : 'text-gray-300'}`} />
+                    ))}
+                  </div>
+                  <span className="text-[10px] text-gray-400 font-medium">
+                    {new Date(fb.created_at).toLocaleDateString()}
+                  </span>
+                </div>
+                <p className="text-xs sm:text-sm text-gray-700 italic">"{fb.comment || 'No comment provided.'}"</p>
+              </div>
+            ))}
+            {feedbacks.length === 0 && <p className="text-xs text-gray-400 italic">No feedbacks yet.</p>}
+          </div>
+        </div>
+
+        {/* Recent Customers/Orders */}
+        <div className="bg-white p-4 sm:p-6 rounded-2xl sm:rounded-3xl shadow-sm border border-gray-100">
+          <div className="flex items-center gap-2 mb-4">
+            <Clock className="w-4 h-4 text-gray-400" />
+            <h2 className="text-sm sm:text-lg font-bold">Live Order History</h2>
+          </div>
+          <div className="space-y-3">
+            {recentCustomers.map(order => (
+              <div key={order.id} className="flex justify-between items-center p-3 bg-gray-50 rounded-xl border border-gray-100">
+                <div>
+                  <div className="font-bold text-sm text-gray-800">Table {order.tableNumber} <span className="text-gray-400 font-normal ml-1">({order.items?.length} items)</span></div>
+                  <div className="text-[10px] text-gray-500">IP: {order.ip_address || 'Unknown'} • {new Date(order.createdAt).toLocaleTimeString()}</div>
+                </div>
+                <div className="text-right">
+                  <div className="font-black text-sm">₹{order.totalAmount}</div>
+                  <div className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded ${
+                    order.status === 'delivered' ? 'bg-green-100 text-green-700' :
+                    order.status === 'pending_payment' ? 'bg-yellow-100 text-yellow-700' :
+                    'bg-blue-100 text-blue-700'
+                  }`}>
+                    {order.status}
+                  </div>
+                </div>
+              </div>
+            ))}
+            {recentCustomers.length === 0 && <p className="text-xs text-gray-400 italic">No recent orders.</p>}
+          </div>
         </div>
       </div>
     </div>

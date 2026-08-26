@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { CheckCircle2, Clock, ChefHat, HeartHandshake, ShoppingBag } from 'lucide-react';
+import { CheckCircle2, Clock, ChefHat, HeartHandshake, ShoppingBag, XCircle } from 'lucide-react';
 import useStore from '../../store/useStore';
 import { useOrder } from '../../hooks/supabaseHooks';
+import { supabase } from '../../supabase';
 
 const Tracker = ({ onFeedback, onBackToMenu }) => {
   const activeOrderId = useStore(state => state.activeOrderId);
@@ -181,7 +182,26 @@ const Tracker = ({ onFeedback, onBackToMenu }) => {
         >
           Order More Items
         </button>
-        <span className="text-xs text-gray-400 font-medium">
+        {['pending_payment', 'approved'].includes(order.status) && (
+          <button 
+            onClick={async () => {
+              if (window.confirm("Are you sure you want to cancel this order?")) {
+                try {
+                  const { error } = await supabase.from('orders').delete().eq('id', order.id);
+                  if (error) throw error;
+                  setActiveOrderId(null);
+                  onBackToMenu();
+                } catch (err) {
+                  alert("Failed to cancel order.");
+                }
+              }
+            }}
+            className="w-full bg-red-50 text-red-600 font-bold py-3 rounded-2xl hover:bg-red-100 transition-colors text-sm flex items-center justify-center gap-2 mt-1"
+          >
+            <XCircle size={16} /> Cancel Order
+          </button>
+        )}
+        <span className="text-xs text-gray-400 font-medium mt-1">
           Updates automatically in real-time
         </span>
       </div>

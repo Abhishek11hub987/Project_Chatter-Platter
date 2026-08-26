@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Star } from 'lucide-react';
 import useStore from '../../store/useStore';
+import { supabase } from '../../supabase';
 
 const Feedback = ({ onDone }) => {
   const [rating, setRating] = useState(0);
@@ -15,21 +16,14 @@ const Feedback = ({ onDone }) => {
     if (rating === 0) return;
     
     try {
-      // Simulate network request
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-      const stored = localStorage.getItem('cp_feedback');
-      const feedbackData = stored ? JSON.parse(stored) : [];
-      
-      feedbackData.push({
-        id: 'fb_' + Date.now().toString(),
-        orderId: activeOrderId || 'unknown',
+      const { error } = await supabase.from('feedbacks').insert([{
         rating,
-        comment,
-        createdAt: Date.now()
-      });
+        comment: comment || null
+      }]);
       
-      localStorage.setItem('cp_feedback', JSON.stringify(feedbackData));
+      if (error) {
+        console.error("Supabase insert error:", error);
+      }
       setSubmitted(true);
     } catch (error) {
       console.error("Error submitting feedback:", error);

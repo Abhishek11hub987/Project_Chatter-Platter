@@ -58,7 +58,31 @@ const SplashScreen = () => (
 
 const CustomerApp = () => {
   const [showSplash, setShowSplash] = useState(true);
-  const [currentScreen, setCurrentScreen] = useState('welcome'); // welcome, menu, cart, tracker, feedback
+
+  // Hash-based routing to support hardware back button
+  const getHashScreen = () => {
+    const hash = window.location.hash.replace('#', '');
+    return ['welcome', 'menu', 'cart', 'tracker', 'feedback'].includes(hash) ? hash : 'welcome';
+  };
+  
+  const [currentScreen, setCurrentScreenState] = useState(getHashScreen());
+
+  useEffect(() => {
+    const handleHashChange = () => setCurrentScreenState(getHashScreen());
+    window.addEventListener('hashchange', handleHashChange);
+    
+    // Set initial hash if empty
+    if (!window.location.hash) {
+      window.history.replaceState(null, null, '#welcome');
+    }
+    
+    return () => window.removeEventListener('hashchange', handleHashChange);
+  }, []);
+
+  const setCurrentScreen = (screen) => {
+    window.location.hash = screen;
+  };
+
   const activeOrderId = useStore((state) => state.activeOrderId);
   const { order, loading } = useOrder(activeOrderId);
   const [hasRedirectedToTracker, setHasRedirectedToTracker] = useState(false);

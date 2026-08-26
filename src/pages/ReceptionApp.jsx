@@ -15,7 +15,7 @@ const ReceptionApp = () => {
   
   const [prevPendingCount, setPrevPendingCount] = useState(0);
   
-  const pendingOrders = orders.filter(o => o.status === 'pending_payment');
+  const pendingOrders = [...orders].filter(o => o.status === 'pending_payment').reverse(); // FIFO
   const activeOrders = orders.filter(o => ['approved', 'cooking', 'ready'].includes(o.status));
 
   // Sound alert for new pending order
@@ -60,6 +60,34 @@ const ReceptionApp = () => {
       await approveOrderAndAssignToken(orderId);
     } catch (error) {
       alert("Failed to approve order");
+    } finally {
+      setProcessingId(null);
+    }
+  };
+
+  const handleCancel = async (orderId) => {
+    if (!window.confirm("Are you sure you want to completely cancel this order?")) return;
+    setProcessingId(orderId);
+    try {
+      const { supabase } = await import('../supabase');
+      await supabase.from('orders').delete().eq('id', orderId);
+      window.location.reload(); // Refresh to clear state
+    } catch (e) {
+      alert("Failed to cancel.");
+    } finally {
+      setProcessingId(null);
+    }
+  };
+
+  const handleRevertToPending = async (orderId) => {
+    if (!window.confirm("Are you sure you want to revert this order back to pending?")) return;
+    setProcessingId(orderId);
+    try {
+      const { supabase } = await import('../supabase');
+      await supabase.from('orders').update({ status: 'pending_payment', tokenNumber: null }).eq('id', orderId);
+      window.location.reload();
+    } catch (e) {
+      alert("Failed to revert.");
     } finally {
       setProcessingId(null);
     }
@@ -133,13 +161,21 @@ const ReceptionApp = () => {
                     exit={{ x: -50, opacity: 0 }}
                     className="bg-white rounded-xl sm:rounded-2xl shadow-sm p-3 sm:p-4 lg:p-5 border border-gray-100"
                   >
-                    <div className="flex items-center gap-2 sm:gap-3 mb-2">
-                      <span className="bg-gray-100 text-gray-800 px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-full text-[11px] sm:text-xs lg:text-sm font-bold">
-                        Table {order.tableNumber}
-                      </span>
-                      <span className="text-gray-400 text-[10px] sm:text-xs font-medium flex items-center gap-1">
-                        <Clock size={10} className="sm:w-3 sm:h-3"/> Just now
-                      </span>
+                    <div className="flex items-center gap-2 sm:gap-3 mb-2 justify-between">
+                      <div className="flex items-center gap-2">
+                        <span className="bg-gray-100 text-gray-800 px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-full text-[11px] sm:text-xs lg:text-sm font-bold">
+                          Table {order.tableNumber}
+                        </span>
+                        <span className="text-gray-400 text-[10px] sm:text-xs font-medium flex items-center gap-1">
+                          <Clock size={10} className="sm:w-3 sm:h-3"/> Just now
+                        </span>
+                      </div>
+                      <button 
+                        onClick={() => handleCancel(order.id)}
+                        className="text-xs text-red-500 font-bold bg-red-50 px-2 py-1 rounded"
+                      >
+                        Cancel
+                      </button>
                     </div>
                     
                     {/* Order items */}
@@ -176,26 +212,42 @@ const ReceptionApp = () => {
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3 lg:gap-4">
                 {activeOrders.map(order => (
-                  <div key={order.id} className={`bg-white rounded-xl sm:rounded-2xl shadow-sm p-3 sm:p-4 border-l-4 ${
+                  <div key={order.id} className={`bg-white flex flex-col rounded-xl sm:rounded-2xl shadow-sm p-3 sm:p-4 border-l-4 ${
                     order.status === 'ready' ? 'border-l-green-500' :
                     order.status === 'cooking' ? 'border-l-orange-500' : 'border-l-yellow-400'
                   }`}>
-                    <div className="flex justify-between items-start mb-1.5 sm:mb-2">
-                      <div>
-                        <span className="text-[10px] sm:text-xs text-gray-400 font-bold uppercase">Token</span>
-                        <div className="text-2xl sm:text-3xl font-black leading-none text-gray-800">{order.tokenNumber}</div>
+                    <div className="flex-1">
+                      <div className="flex justify-between items-start mb-1.5 sm:mb-2">
+                        <div>
+                          <span className="text-[10px] sm:text-xs text-gray-400 font-bold uppercase">Token</span>
+                          <div className="text-2xl sm:text-3xl font-black leading-none text-gray-800">{order.tokenNumber}</div>
+                        </div>
+                        <span className={`px-2 py-0.5 sm:py-1 text-[10px] sm:text-xs font-bold uppercase rounded ${
+                          order.status === 'ready' ? 'bg-green-100 text-green-700' :
+                          order.status === 'cooking' ? 'bg-orange-100 text-orange-700' : 'bg-yellow-100 text-yellow-700'
+                        }`}>
+                          {order.status}
+                        </span>
                       </div>
-                      <span className={`px-2 py-0.5 sm:py-1 text-[10px] sm:text-xs font-bold uppercase rounded ${
-                        order.status === 'ready' ? 'bg-green-100 text-green-700' :
-                        order.status === 'cooking' ? 'bg-orange-100 text-orange-700' : 'bg-yellow-100 text-yellow-700'
-                      }`}>
-                        {order.status}
-                      </span>
+                      <div className="text-xs sm:text-sm font-bold text-gray-500 mb-1.5 sm:mb-2">Table {order.tableNumber}</div>
+                      <p className="text-[11px] sm:text-sm text-gray-600 truncate">
+                        {order.items && order.items.map(i => `${i.qty}x ${i.name}`).join(', ')}
+                      </p>
                     </div>
-                    <div className="text-xs sm:text-sm font-bold text-gray-500 mb-1.5 sm:mb-2">Table {order.tableNumber}</div>
-                    <p className="text-[11px] sm:text-sm text-gray-600 truncate">
-                      {order.items && order.items.map(i => `${i.qty}x ${i.name}`).join(', ')}
-                    </p>
+                    <div className="mt-4 flex gap-2 pt-3 border-t border-gray-100">
+                      <button 
+                        onClick={() => handleCancel(order.id)}
+                        className="flex-1 bg-red-50 text-red-600 font-bold text-xs py-2 rounded"
+                      >
+                        Cancel Order
+                      </button>
+                      <button 
+                        onClick={() => handleRevertToPending(order.id)}
+                        className="flex-1 bg-gray-100 text-gray-700 font-bold text-xs py-2 rounded"
+                      >
+                        Revert to Pending
+                      </button>
+                    </div>
                   </div>
                 ))}
               </div>

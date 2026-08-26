@@ -65,6 +65,23 @@ const Menu = ({ onCartClick, onTrackerClick, onBackClick }) => {
             </button>
           ))}
         </div>
+        
+        {/* Install App Banner (only shows if not in standalone PWA mode) */}
+        {!window.matchMedia('(display-mode: standalone)').matches && !window.navigator.standalone && (
+          <div className="mt-2 bg-primary/10 border border-primary/20 rounded-xl p-3 flex items-center justify-between">
+            <div className="text-xs font-bold text-gray-800">
+              Install Chatter & Platter for a better experience!
+            </div>
+            <button 
+              onClick={() => {
+                alert("To install: tap the Share button (iOS) or Menu button (Android) and select 'Add to Home Screen'");
+              }}
+              className="bg-primary text-black px-3 py-1.5 rounded-lg text-xs font-bold active:scale-95 transition-transform shrink-0"
+            >
+              Install App
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Menu Grid */}

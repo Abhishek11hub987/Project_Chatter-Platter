@@ -4,7 +4,7 @@ import useStore from '../store/useStore';
 import { useOrders } from '../hooks/supabaseHooks';
 import { Maximize2, Minimize2, ChefHat, Flame, CheckCircle } from 'lucide-react';
 
-const ChefOrderCard = ({ order, onAction, actionText, actionColor, isLoading }) => {
+const ChefOrderCard = ({ order, onAction, actionText, actionColor, isLoading, onUndo, undoText }) => {
   return (
     <motion.div 
       layout
@@ -37,13 +37,24 @@ const ChefOrderCard = ({ order, onAction, actionText, actionColor, isLoading }) 
         </ul>
       </div>
       
-      <button 
-        onClick={() => onAction(order)}
-        disabled={isLoading}
-        className={`w-full py-3 sm:py-4 lg:py-5 text-sm sm:text-base lg:text-xl font-black uppercase tracking-wider transition-colors disabled:opacity-50 ${actionColor}`}
-      >
-        {isLoading ? 'Processing...' : actionText}
-      </button>
+      <div className="flex">
+        {onUndo && (
+          <button 
+            onClick={() => onUndo(order)}
+            disabled={isLoading}
+            className={`w-1/3 py-3 sm:py-4 lg:py-5 text-[10px] sm:text-sm lg:text-lg font-black uppercase tracking-wider transition-colors disabled:opacity-50 bg-gray-700 hover:bg-gray-600 text-white`}
+          >
+            {undoText || 'Undo'}
+          </button>
+        )}
+        <button 
+          onClick={() => onAction(order)}
+          disabled={isLoading}
+          className={`${onUndo ? 'w-2/3 border-l border-gray-900' : 'w-full'} py-3 sm:py-4 lg:py-5 text-sm sm:text-base lg:text-xl font-black uppercase tracking-wider transition-colors disabled:opacity-50 ${actionColor}`}
+        >
+          {isLoading ? 'Processing...' : actionText}
+        </button>
+      </div>
     </motion.div>
   );
 };
@@ -92,6 +103,7 @@ const ChefApp = () => {
   }, [newOrders.length, prevNewCount]);
 
   const handleAction = async (order, newStatus) => {
+    if (!window.confirm(`Confirm marking Token ${order.tokenNumber} as ${newStatus.toUpperCase()}?`)) return;
     setProcessingId(order.id);
     try {
       await updateOrderStatus(order.id, newStatus);
@@ -146,7 +158,7 @@ const ChefApp = () => {
   }
 
   // Mobile tab-based column selector
-  const renderColumn = (title, columnOrders, actionText, actionColor, bgColor, newStatus) => (
+  const renderColumn = (title, columnOrders, actionText, actionColor, bgColor, newStatus, undoStatus = null) => (
     <div className="flex flex-col h-full bg-gray-950 rounded-xl sm:rounded-2xl lg:rounded-3xl border border-gray-800 overflow-hidden">
       <div className={`${bgColor} p-2.5 sm:p-3 lg:p-4 text-center font-black text-sm sm:text-base lg:text-xl uppercase tracking-widest shrink-0`}>
         {title} ({columnOrders.length})
@@ -161,6 +173,8 @@ const ChefApp = () => {
               actionText={actionText} 
               actionColor={actionColor}
               isLoading={processingId === order.id}
+              onUndo={undoStatus ? (o) => handleAction(o, undoStatus) : null}
+              undoText="Undo"
             />
           ))}
         </AnimatePresence>
@@ -208,15 +222,15 @@ const ChefApp = () => {
       {/* Desktop: 3-column Kanban Board */}
       <main className="hidden md:grid flex-1 grid-cols-3 gap-3 sm:gap-4 lg:gap-6 p-3 sm:p-4 lg:p-6 overflow-hidden">
         {renderColumn('New Orders', newOrders, 'Start Cooking', 'bg-orange-500 hover:bg-orange-600 text-white', 'bg-primary text-black', 'cooking')}
-        {renderColumn('Cooking', cookingOrders, 'Order Ready', 'bg-green-500 hover:bg-green-600 text-white', 'bg-orange-500 text-white', 'ready')}
-        {renderColumn('Ready', readyOrders, 'Mark Delivered', 'bg-gray-700 hover:bg-gray-600 text-gray-300', 'bg-green-500 text-white', 'delivered')}
+        {renderColumn('Cooking', cookingOrders, 'Order Ready', 'bg-green-500 hover:bg-green-600 text-white', 'bg-orange-500 text-white', 'ready', 'approved')}
+        {renderColumn('Ready', readyOrders, 'Mark Delivered', 'bg-gray-700 hover:bg-gray-600 text-gray-300', 'bg-green-500 text-white', 'delivered', 'cooking')}
       </main>
 
       {/* Mobile: Single column based on active tab */}
       <main className="flex md:hidden flex-1 p-2 sm:p-3 overflow-hidden">
         {activeTab === 'new' && renderColumn('New Orders', newOrders, 'Start Cooking', 'bg-orange-500 hover:bg-orange-600 text-white', 'bg-primary text-black', 'cooking')}
-        {activeTab === 'cooking' && renderColumn('Cooking', cookingOrders, 'Order Ready', 'bg-green-500 hover:bg-green-600 text-white', 'bg-orange-500 text-white', 'ready')}
-        {activeTab === 'ready' && renderColumn('Ready', readyOrders, 'Mark Delivered', 'bg-gray-700 hover:bg-gray-600 text-gray-300', 'bg-green-500 text-white', 'delivered')}
+        {activeTab === 'cooking' && renderColumn('Cooking', cookingOrders, 'Order Ready', 'bg-green-500 hover:bg-green-600 text-white', 'bg-orange-500 text-white', 'ready', 'approved')}
+        {activeTab === 'ready' && renderColumn('Ready', readyOrders, 'Mark Delivered', 'bg-gray-700 hover:bg-gray-600 text-gray-300', 'bg-green-500 text-white', 'delivered', 'cooking')}
       </main>
     </div>
   );
