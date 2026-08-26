@@ -34,7 +34,7 @@ const OwnerApp = () => {
           .from('feedbacks')
           .select('*')
           .order('created_at', { ascending: false })
-          .limit(10);
+          .limit(50);
         setFeedbacks(fbData || []);
 
         // Fetch recent customers
@@ -42,7 +42,7 @@ const OwnerApp = () => {
           .from('orders')
           .select('*')
           .order('createdAt', { ascending: false })
-          .limit(5);
+          .limit(50);
         setRecentCustomers(custData || []);
 
         const now = new Date();
@@ -115,9 +115,27 @@ const OwnerApp = () => {
 
     fetchAnalytics();
     
-    // Refresh every 5 mins
+    // Refresh every 5 mins as fallback
     const interval = setInterval(fetchAnalytics, 300000);
-    return () => clearInterval(interval);
+
+    // Setup realtime listeners for orders and feedbacks to update instantly
+    const orderChannel = supabase.channel('owner_orders_realtime')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, () => {
+        fetchAnalytics();
+      })
+      .subscribe();
+
+    const fbChannel = supabase.channel('owner_feedbacks_realtime')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'feedbacks' }, () => {
+        fetchAnalytics();
+      })
+      .subscribe();
+
+    return () => {
+      clearInterval(interval);
+      supabase.removeChannel(orderChannel);
+      supabase.removeChannel(fbChannel);
+    };
   }, []);
 
   const StatCard = ({ title, rev, orders, cash, online, icon: Icon, color }) => (
@@ -225,12 +243,12 @@ const OwnerApp = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6 mt-8">
         {/* Recent Feedbacks */}
-        <div className="bg-white p-4 sm:p-6 rounded-2xl sm:rounded-3xl shadow-sm border border-gray-100">
-          <div className="flex items-center gap-2 mb-4">
+        <div className="bg-white p-4 sm:p-6 rounded-2xl sm:rounded-3xl shadow-sm border border-gray-100 flex flex-col h-[500px]">
+          <div className="flex items-center gap-2 mb-4 shrink-0">
             <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" />
             <h2 className="text-sm sm:text-lg font-bold">Recent Customer Feedback</h2>
           </div>
-          <div className="space-y-4">
+          <div className="space-y-4 overflow-y-auto pr-2 flex-1 hide-scrollbar">
             {feedbacks.map(fb => (
               <div key={fb.id} className="p-3 bg-gray-50 rounded-xl border border-gray-100">
                 <div className="flex items-center justify-between mb-1">
@@ -251,12 +269,12 @@ const OwnerApp = () => {
         </div>
 
         {/* Recent Customers/Orders */}
-        <div className="bg-white p-4 sm:p-6 rounded-2xl sm:rounded-3xl shadow-sm border border-gray-100">
-          <div className="flex items-center gap-2 mb-4">
+        <div className="bg-white p-4 sm:p-6 rounded-2xl sm:rounded-3xl shadow-sm border border-gray-100 flex flex-col h-[500px]">
+          <div className="flex items-center gap-2 mb-4 shrink-0">
             <Clock className="w-4 h-4 text-gray-400" />
             <h2 className="text-sm sm:text-lg font-bold">Live Order History</h2>
           </div>
-          <div className="space-y-3">
+          <div className="space-y-3 overflow-y-auto pr-2 flex-1 hide-scrollbar">
             {recentCustomers.map(order => (
               <div key={order.id} className="flex justify-between items-center p-3 bg-gray-50 rounded-xl border border-gray-100">
                 <div>
