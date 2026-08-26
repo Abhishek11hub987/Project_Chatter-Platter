@@ -14,6 +14,7 @@ const Cart = ({ onBack, onOrderPlaced }) => {
   
   const { placeOrder } = useOrders();
   const [isPlacing, setIsPlacing] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState('cash');
 
   const totalAmount = cart.reduce((sum, item) => sum + item.subtotal, 0);
 
@@ -24,6 +25,7 @@ const Cart = ({ onBack, onOrderPlaced }) => {
     try {
       const orderId = await placeOrder({
         tableNumber: tableNumber || "Takeaway",
+        paymentMethod,
         items: cart.map(i => ({
           itemId: i.itemId,
           name: i.name,
@@ -109,16 +111,34 @@ const Cart = ({ onBack, onOrderPlaced }) => {
 
       {/* Footer / Summary */}
       {cart.length > 0 && (
-        <div className="bg-white border-t rounded-t-3xl p-6 shadow-[0_-10px_40px_-15px_rgba(0,0,0,0.1)] pb-8 z-20">
+        <div className="bg-white border-t rounded-t-3xl p-6 shadow-[0_-10px_40px_-15px_rgba(0,0,0,0.1)] pb-8 z-20 flex flex-col gap-5">
           
-          <div className="bg-orange-50 border border-orange-200 rounded-xl p-3 mb-6 flex items-start gap-3">
+          <div className="bg-orange-50 border border-orange-200 rounded-xl p-3 flex items-start gap-3">
             <AlertCircle className="text-orange-500 shrink-0 mt-0.5" size={18} />
             <p className="text-sm text-orange-800 font-medium">
               💡 Please pay at the reception desk. Your order will be prepared after payment confirmation.
             </p>
           </div>
 
-          <div className="flex justify-between items-center mb-6">
+          <div className="space-y-3">
+            <p className="font-bold text-gray-800 text-sm">Select Payment Method:</p>
+            <div className="grid grid-cols-2 gap-3">
+              <button 
+                onClick={() => setPaymentMethod('cash')}
+                className={`py-3 rounded-xl font-bold border-2 transition-all ${paymentMethod === 'cash' ? 'border-primary bg-primary/10 text-black' : 'border-gray-100 bg-gray-50 text-gray-500'}`}
+              >
+                💵 Pay Cash
+              </button>
+              <button 
+                onClick={() => setPaymentMethod('online')}
+                className={`py-3 rounded-xl font-bold border-2 transition-all ${paymentMethod === 'online' ? 'border-primary bg-primary/10 text-black' : 'border-gray-100 bg-gray-50 text-gray-500'}`}
+              >
+                📱 Pay Online
+              </button>
+            </div>
+          </div>
+
+          <div className="flex justify-between items-center mt-2">
             <span className="text-gray-500 font-bold uppercase tracking-wider text-sm">Total</span>
             <span className="text-3xl font-black">₹{totalAmount}</span>
           </div>
@@ -126,7 +146,7 @@ const Cart = ({ onBack, onOrderPlaced }) => {
           <button
             onClick={handlePlaceOrder}
             disabled={isPlacing}
-            className="w-full bg-black text-primary hover:bg-gray-900 rounded-full py-4 text-lg font-black uppercase tracking-wider shadow-lg transition-transform active:scale-95 disabled:opacity-70 flex justify-center items-center"
+            className="w-full bg-black text-primary hover:bg-gray-900 rounded-full py-4 text-lg font-black uppercase tracking-wider shadow-lg transition-transform active:scale-95 disabled:opacity-70 flex justify-center items-center mt-2"
           >
             {isPlacing ? (
               <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>

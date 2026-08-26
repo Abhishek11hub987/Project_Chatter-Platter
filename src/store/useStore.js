@@ -10,17 +10,18 @@ const useStore = create(
   
   cart: [],
   addToCart: (item) => set((state) => {
-    const existing = state.cart.find(i => i.itemId === item.itemId);
+    const id = item.itemId || item.id;
+    const existing = state.cart.find(i => i.itemId === id);
     if (existing) {
       return {
         cart: state.cart.map(i => 
-          i.itemId === item.itemId 
+          i.itemId === id 
             ? { ...i, qty: i.qty + 1, subtotal: (i.qty + 1) * i.price } 
             : i
         )
       };
     }
-    return { cart: [...state.cart, { ...item, qty: 1, subtotal: item.price }] };
+    return { cart: [...state.cart, { ...item, itemId: id, qty: 1, subtotal: item.price }] };
   }),
   removeFromCart: (itemId) => set((state) => ({
     cart: state.cart.filter(i => i.itemId !== itemId)
