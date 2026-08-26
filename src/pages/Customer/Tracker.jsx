@@ -69,6 +69,26 @@ const Tracker = ({ onFeedback, onBackToMenu }) => {
     </div>
   );
 
+  if (order.status === 'cancelled') {
+    return (
+      <div className="h-full flex flex-col items-center justify-center p-6 text-center bg-red-50">
+        <XCircle size={64} className="text-red-500 mb-6" />
+        <h2 className="text-2xl font-black text-red-600 mb-2">Order Cancelled</h2>
+        <p className="font-bold text-gray-700 mb-2">Your order was cancelled.</p>
+        <p className="text-sm text-gray-500 mb-8">If you didn't request this, it may have been cancelled by the staff.</p>
+        <button 
+          onClick={() => {
+            setActiveOrderId(null);
+            onBackToMenu();
+          }} 
+          className="bg-red-500 text-white font-bold py-3 px-8 rounded-full shadow-lg active:scale-95 transition-transform"
+        >
+          Return to Menu
+        </button>
+      </div>
+    );
+  }
+
   const getStepStatus = (stepIndex) => {
     const statuses = ['pending_payment', 'approved', 'cooking', 'ready', 'delivered'];
     const currentIndex = statuses.indexOf(order.status);
@@ -187,7 +207,7 @@ const Tracker = ({ onFeedback, onBackToMenu }) => {
             onClick={async () => {
               if (window.confirm("Are you sure you want to cancel this order?")) {
                 try {
-                  const { error } = await supabase.from('orders').delete().eq('id', order.id);
+                  const { error } = await supabase.from('orders').update({ status: 'cancelled' }).eq('id', order.id);
                   if (error) throw error;
                   setActiveOrderId(null);
                   onBackToMenu();

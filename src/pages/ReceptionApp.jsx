@@ -70,7 +70,7 @@ const ReceptionApp = () => {
     setProcessingId(orderId);
     try {
       const { supabase } = await import('../supabase');
-      await supabase.from('orders').delete().eq('id', orderId);
+      await supabase.from('orders').update({ status: 'cancelled' }).eq('id', orderId);
       window.location.reload(); // Refresh to clear state
     } catch (e) {
       alert("Failed to cancel.");
