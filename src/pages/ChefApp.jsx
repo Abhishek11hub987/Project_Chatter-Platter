@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import useStore from '../store/useStore';
-import { useOrders } from '../hooks/supabaseHooks';
+import { useOrders, useMenu } from '../hooks/supabaseHooks';
 import { Maximize2, Minimize2, ChefHat, Flame, CheckCircle } from 'lucide-react';
 
 const ChefOrderCard = ({ order, onAction, actionText, actionColor, isLoading, onUndo, undoText }) => {
@@ -66,6 +66,7 @@ const ChefApp = () => {
   const [processingId, setProcessingId] = useState(null);
   
   const { orders, loading, updateOrderStatus } = useOrders();
+  const { menu, toggleMenuItemAvailability } = useMenu();
   
   const [prevNewCount, setPrevNewCount] = useState(0);
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -212,26 +213,70 @@ const ChefApp = () => {
             >
               Ready
             </button>
+            <button 
+              onClick={() => setActiveTab('inventory')}
+              className={`px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full text-[11px] sm:text-xs font-bold transition-colors ${activeTab === 'inventory' ? 'bg-blue-500 text-white' : 'text-gray-400'}`}
+            >
+              Stock
+            </button>
           </div>
+          <button 
+            onClick={() => setActiveTab(prev => prev === 'inventory' ? 'new' : 'inventory')}
+            className={`hidden md:block px-4 py-1.5 rounded-full text-xs font-bold transition-colors border ${activeTab === 'inventory' ? 'bg-blue-500 border-blue-500 text-white' : 'bg-gray-800 border-gray-700 text-gray-300 hover:bg-gray-700'}`}
+          >
+            {activeTab === 'inventory' ? 'Back to Orders' : 'Manage Inventory'}
+          </button>
           <button onClick={toggleFullscreen} className="bg-gray-800 p-1.5 sm:p-2 lg:p-3 rounded-full hover:bg-gray-700 transition-colors">
             {isFullscreen ? <Minimize2 size={16} className="sm:w-[18px] sm:h-[18px]" /> : <Maximize2 size={16} className="sm:w-[18px] sm:h-[18px]" />}
           </button>
         </div>
       </header>
 
-      {/* Desktop: 3-column Kanban Board */}
-      <main className="hidden md:grid flex-1 grid-cols-3 gap-3 sm:gap-4 lg:gap-6 p-3 sm:p-4 lg:p-6 overflow-hidden">
-        {renderColumn('New Orders', newOrders, 'Start Cooking', 'bg-orange-500 hover:bg-orange-600 text-white', 'bg-primary text-black', 'cooking')}
-        {renderColumn('Cooking', cookingOrders, 'Order Ready', 'bg-green-500 hover:bg-green-600 text-white', 'bg-orange-500 text-white', 'ready', 'approved')}
-        {renderColumn('Ready', readyOrders, 'Mark Delivered', 'bg-gray-700 hover:bg-gray-600 text-gray-300', 'bg-green-500 text-white', 'delivered', 'cooking')}
-      </main>
+      {activeTab === 'inventory' ? (
+        <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
+          <div className="max-w-4xl mx-auto bg-gray-950 rounded-2xl border border-gray-800 overflow-hidden shadow-2xl">
+            <div className="bg-blue-900 p-4 border-b border-blue-800">
+              <h2 className="text-xl font-black text-white uppercase tracking-widest text-center">Menu Inventory</h2>
+            </div>
+            <div className="p-4 space-y-3">
+              {menu.map(item => (
+                <div key={item.id} className={`flex items-center justify-between p-4 rounded-xl border transition-colors ${item.isAvailable ? 'bg-gray-800 border-gray-700' : 'bg-red-950/30 border-red-900/50'}`}>
+                  <div>
+                    <h3 className={`font-bold text-lg ${item.isAvailable ? 'text-white' : 'text-gray-400'}`}>{item.name}</h3>
+                    <p className="text-xs text-gray-500">{item.category}</p>
+                  </div>
+                  <button
+                    onClick={() => toggleMenuItemAvailability(item.id, item.isAvailable)}
+                    className={`px-4 py-2 rounded-lg font-black text-xs sm:text-sm uppercase tracking-wide transition-colors ${
+                      item.isAvailable 
+                        ? 'bg-gray-700 hover:bg-gray-600 text-white' 
+                        : 'bg-red-600 hover:bg-red-500 text-white'
+                    }`}
+                  >
+                    {item.isAvailable ? 'Mark Out of Stock' : 'Out of Stock (Click to Restock)'}
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        </main>
+      ) : (
+        <>
+          {/* Desktop: 3-column Kanban Board */}
+          <main className="hidden md:grid flex-1 grid-cols-3 gap-3 sm:gap-4 lg:gap-6 p-3 sm:p-4 lg:p-6 overflow-hidden">
+            {renderColumn('New Orders', newOrders, 'Start Cooking', 'bg-orange-500 hover:bg-orange-600 text-white', 'bg-primary text-black', 'cooking')}
+            {renderColumn('Cooking', cookingOrders, 'Order Ready', 'bg-green-500 hover:bg-green-600 text-white', 'bg-orange-500 text-white', 'ready', 'approved')}
+            {renderColumn('Ready', readyOrders, 'Mark Delivered', 'bg-gray-700 hover:bg-gray-600 text-gray-300', 'bg-green-500 text-white', 'delivered', 'cooking')}
+          </main>
 
-      {/* Mobile: Single column based on active tab */}
-      <main className="flex md:hidden flex-1 p-2 sm:p-3 overflow-hidden">
-        {activeTab === 'new' && renderColumn('New Orders', newOrders, 'Start Cooking', 'bg-orange-500 hover:bg-orange-600 text-white', 'bg-primary text-black', 'cooking')}
-        {activeTab === 'cooking' && renderColumn('Cooking', cookingOrders, 'Order Ready', 'bg-green-500 hover:bg-green-600 text-white', 'bg-orange-500 text-white', 'ready', 'approved')}
-        {activeTab === 'ready' && renderColumn('Ready', readyOrders, 'Mark Delivered', 'bg-gray-700 hover:bg-gray-600 text-gray-300', 'bg-green-500 text-white', 'delivered', 'cooking')}
-      </main>
+          {/* Mobile: Single column based on active tab */}
+          <main className="flex md:hidden flex-1 p-2 sm:p-3 overflow-hidden">
+            {activeTab === 'new' && renderColumn('New Orders', newOrders, 'Start Cooking', 'bg-orange-500 hover:bg-orange-600 text-white', 'bg-primary text-black', 'cooking')}
+            {activeTab === 'cooking' && renderColumn('Cooking', cookingOrders, 'Order Ready', 'bg-green-500 hover:bg-green-600 text-white', 'bg-orange-500 text-white', 'ready', 'approved')}
+            {activeTab === 'ready' && renderColumn('Ready', readyOrders, 'Mark Delivered', 'bg-gray-700 hover:bg-gray-600 text-gray-300', 'bg-green-500 text-white', 'delivered', 'cooking')}
+          </main>
+        </>
+      )}
     </div>
   );
 };

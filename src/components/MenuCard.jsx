@@ -56,10 +56,10 @@ const MenuCard = ({ item }) => {
         hidden: { opacity: 0, y: 20 },
         show: { opacity: 1, y: 0 }
       }}
-      className="bg-surface rounded-2xl shadow-sm overflow-hidden border border-gray-100 flex flex-col h-full active:scale-[0.98] transition-transform"
+      className={`bg-surface rounded-2xl shadow-sm overflow-hidden border border-gray-100 flex flex-col h-full active:scale-[0.98] transition-transform ${!item.isAvailable ? 'opacity-70 grayscale' : ''}`}
     >
       {/* Top Half - Colored Block */}
-      <div className={`h-24 w-full flex items-center justify-center ${categoryColors[item.category] || 'bg-gray-100'}`}>
+      <div className={`h-24 w-full flex items-center justify-center ${categoryColors[item.category] || 'bg-gray-100'} ${!item.isAvailable ? 'bg-gray-200 text-gray-500' : ''}`}>
         <span className="font-black text-2xl opacity-30">{item.category}</span>
       </div>
       
@@ -72,7 +72,11 @@ const MenuCard = ({ item }) => {
         <div className="flex items-center justify-between mt-auto gap-1">
           <span className="text-base sm:text-lg font-bold text-primary-dark">₹{item.price}</span>
           
-          {quantity > 0 ? (
+          {!item.isAvailable ? (
+            <span className="text-[10px] sm:text-xs font-bold text-red-500 bg-red-50 px-2 py-1 rounded border border-red-100 uppercase tracking-wide">
+              Out of Stock
+            </span>
+          ) : quantity > 0 ? (
             <div className="flex items-center bg-gray-100 rounded-full p-0.5 sm:p-1 gap-1 sm:gap-2">
               <button 
                 onClick={handleDecrease}

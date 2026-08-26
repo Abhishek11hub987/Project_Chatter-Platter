@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../supabase';
-import { TrendingUp, DollarSign, CreditCard, Banknote, Calendar, BarChart3, Star, Clock } from 'lucide-react';
+import { useMenu } from '../hooks/supabaseHooks';
+import { TrendingUp, DollarSign, CreditCard, Banknote, Calendar, BarChart3, Star, Clock, PackageSearch } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Legend } from 'recharts';
 
 const OwnerApp = () => {
@@ -13,6 +14,9 @@ const OwnerApp = () => {
   const [feedbacks, setFeedbacks] = useState([]);
   const [recentCustomers, setRecentCustomers] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  // New hook for inventory
+  const { menu, toggleMenuItemAvailability } = useMenu();
 
   useEffect(() => {
     const fetchAnalytics = async () => {
@@ -273,6 +277,34 @@ const OwnerApp = () => {
             ))}
             {recentCustomers.length === 0 && <p className="text-xs text-gray-400 italic">No recent orders.</p>}
           </div>
+        </div>
+      </div>
+
+      {/* Inventory Management */}
+      <div className="bg-white p-4 sm:p-6 rounded-2xl sm:rounded-3xl shadow-sm border border-gray-100 mt-4 lg:mt-6">
+        <div className="flex items-center gap-2 mb-4 sm:mb-6">
+          <PackageSearch className="w-5 h-5 text-primary-dark" />
+          <h2 className="text-lg sm:text-xl font-black">Inventory Management</h2>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+          {menu && menu.map(item => (
+            <div key={item.id} className={`flex items-center justify-between p-3 sm:p-4 rounded-xl border transition-colors ${item.isAvailable ? 'bg-gray-50 border-gray-100' : 'bg-red-50 border-red-100'}`}>
+              <div className="min-w-0 pr-3">
+                <h3 className={`font-bold text-sm sm:text-base truncate ${item.isAvailable ? 'text-gray-800' : 'text-gray-500 line-through'}`}>{item.name}</h3>
+                <p className="text-[10px] sm:text-xs text-gray-500 font-medium">{item.category}</p>
+              </div>
+              <button
+                onClick={() => toggleMenuItemAvailability(item.id, item.isAvailable)}
+                className={`px-3 py-1.5 rounded-lg font-black text-[10px] sm:text-xs uppercase tracking-wide transition-colors shrink-0 ${
+                  item.isAvailable 
+                    ? 'bg-gray-200 hover:bg-gray-300 text-gray-700' 
+                    : 'bg-red-500 hover:bg-red-600 text-white shadow-sm'
+                }`}
+              >
+                {item.isAvailable ? 'Mark Out of Stock' : 'Restock Item'}
+              </button>
+            </div>
+          ))}
         </div>
       </div>
     </div>

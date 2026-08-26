@@ -118,7 +118,32 @@ export const useMenu = () => {
     };
   }, []);
 
-  return { menu, loading };
+  const toggleMenuItemAvailability = async (menuId, currentStatus) => {
+    // Optimistic local update
+    setMenu(prev => prev.map(item => 
+      item.id === menuId || item.itemId === menuId 
+        ? { ...item, isAvailable: !currentStatus } 
+        : item
+    ));
+
+    try {
+      const { error } = await supabase
+        .from('menu')
+        .update({ isAvailable: !currentStatus })
+        // handle both id or itemId depending on seed data structure
+        .or(`id.eq.${menuId},itemId.eq.${menuId}`);
+
+      if (error) throw error;
+    } catch (err) {
+      console.error('Error toggling menu item:', err);
+      // Revert on failure
+      const { data } = await supabase.from('menu').select('*').order('category').order('name');
+      if (data) setMenu(data);
+      throw err;
+    }
+  };
+
+  return { menu, loading, toggleMenuItemAvailability };
 };
 
 export const useOrders = (statusFilter = null) => {
@@ -261,9 +286,34 @@ export const useOrders = (statusFilter = null) => {
     }
   };
 
+  const updateOrderItems = async (orderId, newItems) => {
+    // Calculate new total
+    const newTotal = newItems.reduce((sum, item) => sum + ((item.price || 0) * (item.qty || 1)), 0);
+
+    // Optimistic local update
+    setOrders(prev => prev.map(o =>
+      o.id === orderId
+        ? { ...o, items: newItems, totalAmount: newTotal, total: newTotal }
+        : o
+    ));
+
+    try {
+      const { error } = await supabase
+        .from('orders')
+        .update({ items: newItems, totalAmount: newTotal, total: newTotal })
+        .eq('id', orderId);
+
+      if (error) throw error;
+    } catch (err) {
+      console.error('Error updating order items:', err);
+      loadOrders();
+      throw err;
+    }
+  };
+
   const refetch = () => loadOrders();
 
-  return { orders, loading, placeOrder, updateOrderStatus, approveOrderAndAssignToken, refetch };
+  return { orders, loading, placeOrder, updateOrderStatus, approveOrderAndAssignToken, updateOrderItems, refetch };
 };
 
 export const useOrder = (orderId) => {

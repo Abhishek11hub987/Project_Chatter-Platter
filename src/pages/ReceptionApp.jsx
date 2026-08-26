@@ -10,8 +10,11 @@ const ReceptionApp = () => {
   const [pin, setPin] = useState('');
   
   const [activeTab, setActiveTab] = useState('pending');
-  const { orders, loading, approveOrderAndAssignToken } = useOrders();
+  const { orders, loading, approveOrderAndAssignToken, updateOrderItems } = useOrders();
   const [processingId, setProcessingId] = useState(null);
+  
+  const [editingOrder, setEditingOrder] = useState(null);
+  const [editItems, setEditItems] = useState([]);
   
   const [prevPendingCount, setPrevPendingCount] = useState(0);
   
@@ -88,6 +91,46 @@ const ReceptionApp = () => {
       window.location.reload();
     } catch (e) {
       alert("Failed to revert.");
+    } finally {
+      setProcessingId(null);
+    }
+  };
+
+  const openEditModal = (order) => {
+    setEditingOrder(order);
+    setEditItems(JSON.parse(JSON.stringify(order.items || []))); // deep copy
+  };
+
+  const closeEditModal = () => {
+    setEditingOrder(null);
+    setEditItems([]);
+  };
+
+  const updateEditItemQty = (idx, delta) => {
+    setEditItems(prev => {
+      const newItems = [...prev];
+      newItems[idx].qty += delta;
+      if (newItems[idx].qty < 0) newItems[idx].qty = 0; // allow 0 for removal
+      return newItems;
+    });
+  };
+
+  const saveEditOrder = async () => {
+    const finalItems = editItems.filter(item => item.qty > 0);
+    
+    if (finalItems.length === 0) {
+      // If all items removed, just cancel the order
+      await handleCancel(editingOrder.id);
+      closeEditModal();
+      return;
+    }
+
+    setProcessingId('edit_' + editingOrder.id);
+    try {
+      await updateOrderItems(editingOrder.id, finalItems);
+      closeEditModal();
+    } catch (e) {
+      alert("Failed to update order");
     } finally {
       setProcessingId(null);
     }
@@ -170,12 +213,20 @@ const ReceptionApp = () => {
                           <Clock size={10} className="sm:w-3 sm:h-3"/> Just now
                         </span>
                       </div>
-                      <button 
-                        onClick={() => handleCancel(order.id)}
-                        className="text-xs text-red-500 font-bold bg-red-50 px-2 py-1 rounded"
-                      >
-                        Cancel
-                      </button>
+                      <div className="flex gap-2">
+                        <button 
+                          onClick={() => openEditModal(order)}
+                          className="text-xs text-blue-500 font-bold bg-blue-50 px-2 py-1 rounded"
+                        >
+                          Edit
+                        </button>
+                        <button 
+                          onClick={() => handleCancel(order.id)}
+                          className="text-xs text-red-500 font-bold bg-red-50 px-2 py-1 rounded"
+                        >
+                          Cancel
+                        </button>
+                      </div>
                     </div>
                     
                     {/* Order items */}
@@ -236,6 +287,12 @@ const ReceptionApp = () => {
                     </div>
                     <div className="mt-4 flex gap-2 pt-3 border-t border-gray-100">
                       <button 
+                        onClick={() => openEditModal(order)}
+                        className="flex-1 bg-blue-50 text-blue-600 font-bold text-xs py-2 rounded"
+                      >
+                        Edit Items
+                      </button>
+                      <button 
                         onClick={() => handleCancel(order.id)}
                         className="flex-1 bg-red-50 text-red-600 font-bold text-xs py-2 rounded"
                       >
@@ -255,6 +312,66 @@ const ReceptionApp = () => {
           </div>
         )}
       </main>
+
+      {/* Edit Order Modal */}
+      <AnimatePresence>
+        {editingOrder && (
+          <motion.div 
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-sm"
+          >
+            <motion.div 
+              initial={{ scale: 0.9, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.9, y: 20 }}
+              className="bg-white w-full max-w-md rounded-3xl overflow-hidden shadow-2xl flex flex-col max-h-[90vh]"
+            >
+              <div className="p-4 sm:p-5 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+                <div>
+                  <h3 className="font-black text-lg">Edit Order</h3>
+                  <p className="text-xs text-gray-500 font-medium">Table {editingOrder.tableNumber}</p>
+                </div>
+                <button onClick={closeEditModal} className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-200 text-gray-600 hover:bg-gray-300 font-bold">✕</button>
+              </div>
+
+              <div className="p-4 sm:p-5 overflow-y-auto flex-1">
+                <div className="space-y-4">
+                  {editItems.map((item, idx) => (
+                    <div key={idx} className={`flex items-center justify-between p-3 rounded-xl border ${item.qty === 0 ? 'bg-red-50 border-red-100 opacity-50' : 'bg-white border-gray-100'}`}>
+                      <div className="flex-1 min-w-0 pr-3">
+                        <div className="font-bold text-sm text-gray-800 truncate">{item.name}</div>
+                        <div className="text-xs font-medium text-gray-500">₹{item.price} each</div>
+                      </div>
+                      <div className="flex items-center gap-3 bg-gray-100 rounded-lg p-1 shrink-0">
+                        <button onClick={() => updateEditItemQty(idx, -1)} className="w-7 h-7 flex items-center justify-center rounded-md bg-white text-gray-600 shadow-sm font-bold active:bg-gray-200">-</button>
+                        <span className="font-black text-sm w-4 text-center">{item.qty}</span>
+                        <button onClick={() => updateEditItemQty(idx, 1)} className="w-7 h-7 flex items-center justify-center rounded-md bg-white text-gray-600 shadow-sm font-bold active:bg-gray-200">+</button>
+                      </div>
+                    </div>
+                  ))}
+                  {editItems.filter(i => i.qty > 0).length === 0 && (
+                    <p className="text-sm text-red-500 font-bold text-center mt-4">Saving this will cancel the entire order.</p>
+                  )}
+                </div>
+              </div>
+
+              <div className="p-4 sm:p-5 border-t border-gray-100 bg-gray-50">
+                <div className="flex justify-between items-center mb-4">
+                  <span className="font-bold text-gray-500">New Total</span>
+                  <span className="font-black text-xl text-primary-dark">
+                    ₹{editItems.reduce((sum, item) => sum + (item.price * item.qty), 0)}
+                  </span>
+                </div>
+                <button 
+                  onClick={saveEditOrder}
+                  disabled={processingId === 'edit_' + editingOrder.id}
+                  className="w-full bg-primary text-black font-black py-3 rounded-xl hover:bg-primary-dark active:scale-[0.98] transition-transform disabled:opacity-50"
+                >
+                  {processingId === 'edit_' + editingOrder.id ? 'Saving...' : 'Save Changes'}
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };
