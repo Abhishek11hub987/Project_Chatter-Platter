@@ -14,14 +14,14 @@ const ChefOrderCard = ({ order, onAction, actionText, actionColor, isLoading }) 
       className="bg-gray-800 rounded-xl sm:rounded-2xl shadow-xl border border-gray-700 overflow-hidden flex flex-col"
     >
       <div className="p-3 sm:p-4 lg:p-6 flex-1">
-        <div className="flex justify-between items-start mb-2 sm:mb-3">
-          <div>
+        <div className="flex justify-between items-start mb-2 sm:mb-3 gap-2">
+          <div className="min-w-0 flex-1">
             <div className="text-gray-400 text-[10px] sm:text-xs font-bold uppercase tracking-widest mb-0.5 sm:mb-1">Token</div>
-            <div className="text-4xl sm:text-5xl lg:text-7xl font-black text-white leading-none tracking-tighter">{order.tokenNumber || '—'}</div>
+            <div className="text-4xl sm:text-5xl lg:text-7xl font-black text-white leading-none tracking-tighter truncate">{order.tokenNumber || '—'}</div>
           </div>
-          <div className="bg-gray-700 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg sm:rounded-xl text-center">
+          <div className="bg-gray-700 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg sm:rounded-xl text-center shrink-0 max-w-[50%]">
             <div className="text-gray-400 text-[10px] sm:text-xs font-bold uppercase">Table</div>
-            <div className="text-lg sm:text-xl font-black text-white">{order.tableNumber}</div>
+            <div className="text-sm sm:text-lg lg:text-xl font-black text-white truncate px-1">{order.tableNumber}</div>
           </div>
         </div>
         
