@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Lock, Mail, Download, Loader2, Eye, EyeOff, Smartphone, Apple, Monitor } from 'lucide-react';
+import { Lock, Mail, Download, Loader2, Eye, EyeOff, Smartphone, Apple, Monitor, X } from 'lucide-react';
 import { useAuth } from '../hooks/supabaseHooks';
 import { useNavigate } from 'react-router-dom';
 
@@ -62,8 +62,14 @@ const Login = () => {
         <motion.div
           initial={{ scale: 0.9, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
-          className="bg-white p-6 sm:p-8 rounded-3xl shadow-xl max-w-sm w-full"
+          className="bg-white p-6 sm:p-8 rounded-3xl shadow-xl max-w-sm w-full relative"
         >
+          <button 
+            onClick={() => navigate('/')}
+            className="absolute top-4 right-4 p-2 bg-gray-50 text-gray-400 hover:bg-gray-200 hover:text-black rounded-full transition-colors"
+          >
+            <X size={18} />
+          </button>
           {/* Header */}
           <div className="text-center mb-6">
             <div className="w-16 h-16 bg-[#FFC107] rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
@@ -163,8 +169,14 @@ const Login = () => {
       <motion.div
         initial={{ y: 20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        className="bg-white p-6 sm:p-8 rounded-3xl shadow-xl max-w-sm w-full space-y-6 sm:space-y-8"
+        className="bg-white p-6 sm:p-8 rounded-3xl shadow-xl max-w-sm w-full space-y-6 sm:space-y-8 relative"
       >
+        <button 
+          onClick={() => navigate('/')}
+          className="absolute top-4 right-4 p-2 bg-gray-50 text-gray-400 hover:bg-gray-200 hover:text-black rounded-full transition-colors"
+        >
+          <X size={18} />
+        </button>
         <div className="text-center space-y-2">
           <div className="w-14 h-14 sm:w-16 sm:h-16 bg-black rounded-2xl flex items-center justify-center mx-auto mb-3 sm:mb-4">
             <Lock className="w-7 h-7 sm:w-8 sm:h-8 text-[#FFC107]" />
