@@ -24,19 +24,16 @@ const isMatch = (cartItem, menuItem) => {
 };
 
 const MenuCard = ({ item }) => {
-  // Use a selector that returns just the quantity for THIS item
-  const quantity = useStore(useCallback(
-    (state) => {
-      const found = state.cart.find(c => isMatch(c, item));
-      return found ? found.qty : 0;
-    },
+  // Use a selector that returns the full matched cart item
+  const cartItem = useStore(useCallback(
+    (state) => state.cart.find(c => isMatch(c, item)),
     [item]
   ));
+  
+  const quantity = cartItem ? cartItem.qty : 0;
 
   const addToCart = useStore(state => state.addToCart);
   const updateQuantity = useStore(state => state.updateQuantity);
-
-  const itemId = item.id || item.itemId;
 
   const handleAdd = (e) => {
     e.stopPropagation();
@@ -45,12 +42,12 @@ const MenuCard = ({ item }) => {
 
   const handleIncrease = (e) => {
     e.stopPropagation();
-    updateQuantity(itemId, 1);
+    if (cartItem) updateQuantity(cartItem.itemId || cartItem.id, 1);
   };
 
   const handleDecrease = (e) => {
     e.stopPropagation();
-    updateQuantity(itemId, -1);
+    if (cartItem) updateQuantity(cartItem.itemId || cartItem.id, -1);
   };
 
   return (
@@ -67,28 +64,28 @@ const MenuCard = ({ item }) => {
       </div>
       
       {/* Bottom Half - Info */}
-      <div className="p-4 flex flex-col flex-grow justify-between gap-3">
-        <h3 className="font-bold text-gray-800 leading-tight line-clamp-2 min-h-[2.5rem]">
+      <div className="p-3 sm:p-4 flex flex-col flex-grow justify-between gap-2 sm:gap-3">
+        <h3 className="font-bold text-gray-800 leading-tight line-clamp-2 min-h-[2.5rem] text-sm sm:text-base">
           {item.name}
         </h3>
         
-        <div className="flex items-center justify-between mt-auto">
-          <span className="text-lg font-bold text-primary-dark">₹{item.price}</span>
+        <div className="flex items-center justify-between mt-auto gap-1">
+          <span className="text-base sm:text-lg font-bold text-primary-dark">₹{item.price}</span>
           
           {quantity > 0 ? (
-            <div className="flex items-center bg-gray-100 rounded-full p-1 gap-3">
+            <div className="flex items-center bg-gray-100 rounded-full p-0.5 sm:p-1 gap-1 sm:gap-2">
               <button 
                 onClick={handleDecrease}
-                className="w-8 h-8 flex items-center justify-center rounded-full bg-white shadow-sm text-gray-600 active:bg-gray-200"
+                className="w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center rounded-full bg-white shadow-sm text-gray-600 active:bg-gray-200 shrink-0"
               >
-                <Minus size={16} />
+                <Minus size={14} />
               </button>
-              <span className="font-bold w-4 text-center">{quantity}</span>
+              <span className="font-bold w-3 sm:w-4 text-center text-sm">{quantity}</span>
               <button 
                 onClick={handleIncrease}
-                className="w-8 h-8 flex items-center justify-center rounded-full bg-primary text-black shadow-sm active:bg-primary-dark"
+                className="w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center rounded-full bg-primary text-black shadow-sm active:bg-primary-dark shrink-0"
               >
-                <Plus size={16} />
+                <Plus size={14} />
               </button>
             </div>
           ) : (
