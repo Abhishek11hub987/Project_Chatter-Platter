@@ -11,11 +11,11 @@ const useStore = create(
   cart: [],
   addToCart: (item) => set((state) => {
     const id = item.itemId || item.id;
-    const existing = state.cart.find(i => i.itemId === id);
+    const existing = state.cart.find(i => String(i.itemId || i.id) === String(id));
     if (existing) {
       return {
         cart: state.cart.map(i => 
-          i.itemId === id 
+          String(i.itemId || i.id) === String(id) 
             ? { ...i, qty: i.qty + 1, subtotal: (i.qty + 1) * i.price } 
             : i
         )
@@ -24,12 +24,12 @@ const useStore = create(
     return { cart: [...state.cart, { ...item, itemId: id, qty: 1, subtotal: item.price }] };
   }),
   removeFromCart: (itemId) => set((state) => ({
-    cart: state.cart.filter(i => (i.itemId || i.id) !== itemId)
+    cart: state.cart.filter(i => String(i.itemId || i.id) !== String(itemId))
   })),
   updateQuantity: (itemId, delta) => set((state) => {
     return {
       cart: state.cart.map(i => {
-        if ((i.itemId || i.id) === itemId) {
+        if (String(i.itemId || i.id) === String(itemId)) {
           const newQty = Math.max(0, i.qty + delta);
           return { ...i, qty: newQty, subtotal: newQty * i.price };
         }
