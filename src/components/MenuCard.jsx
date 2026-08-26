@@ -17,7 +17,7 @@ const MenuCard = ({ item }) => {
   const addToCart = useStore(state => state.addToCart);
   const updateQuantity = useStore(state => state.updateQuantity);
   
-  const cartItem = cart.find(i => i.itemId === item.id);
+  const cartItem = cart.find(i => (i.itemId || i.id) === (item.id || item.itemId));
   const quantity = cartItem ? cartItem.qty : 0;
 
   return (
