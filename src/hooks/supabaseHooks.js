@@ -287,20 +287,24 @@ export const useOrders = (statusFilter = null) => {
   };
 
   const updateOrderItems = async (orderId, newItems) => {
-    // Calculate new total
-    const newTotal = newItems.reduce((sum, item) => sum + ((item.price || 0) * (item.qty || 1)), 0);
+    // Recalculate subtotal for each item and overall total
+    const updatedItems = newItems.map(item => ({
+      ...item,
+      subtotal: (item.price || 0) * (item.qty || 1)
+    }));
+    const newTotal = updatedItems.reduce((sum, item) => sum + item.subtotal, 0);
 
     // Optimistic local update
     setOrders(prev => prev.map(o =>
       o.id === orderId
-        ? { ...o, items: newItems, totalAmount: newTotal, total: newTotal }
+        ? { ...o, items: updatedItems, totalAmount: newTotal }
         : o
     ));
 
     try {
       const { error } = await supabase
         .from('orders')
-        .update({ items: newItems, totalAmount: newTotal, total: newTotal })
+        .update({ items: updatedItems, totalAmount: newTotal })
         .eq('id', orderId);
 
       if (error) throw error;
