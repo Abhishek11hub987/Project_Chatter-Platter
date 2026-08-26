@@ -8,7 +8,8 @@ import ChefApp from './ChefApp';
 import ReceptionApp from './ReceptionApp';
 
 const Dashboard = () => {
-  const { user, role, loading, logout } = useAuth();
+  const { user, role: rawRole, loading, logout } = useAuth();
+  const role = rawRole ? rawRole.toLowerCase().trim() : null;
   const navigate = useNavigate();
   const [viewAs, setViewAs] = useState(null);
   const [dropdownOpen, setDropdownOpen] = useState(false);
