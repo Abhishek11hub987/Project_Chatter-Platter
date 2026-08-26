@@ -4,6 +4,7 @@ import useStore from './store/useStore';
 import CustomerApp from './pages/CustomerApp';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
+import ErrorBoundary from './components/ErrorBoundary';
 
 const CustomerRoute = () => {
   const [searchParams] = useSearchParams();
@@ -28,7 +29,11 @@ function App() {
         <Routes>
           <Route path="/" element={<CustomerRoute />} />
           <Route path="/login" element={<Login />} />
-          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/dashboard" element={
+            <ErrorBoundary>
+              <Dashboard />
+            </ErrorBoundary>
+          } />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </div>
