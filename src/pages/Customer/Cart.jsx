@@ -7,6 +7,7 @@ import { useOrders } from '../../hooks/supabaseHooks';
 const Cart = ({ onBack, onOrderPlaced }) => {
   const cart = useStore(state => state.cart);
   const tableNumber = useStore(state => state.tableNumber);
+  const customerName = useStore(state => state.customerName);
   const updateQuantity = useStore(state => state.updateQuantity);
   const removeFromCart = useStore(state => state.removeFromCart);
   const clearCart = useStore(state => state.clearCart);
@@ -25,6 +26,7 @@ const Cart = ({ onBack, onOrderPlaced }) => {
     try {
       const orderId = await placeOrder({
         tableNumber: tableNumber || "Takeaway",
+        customerName: customerName || 'Guest',
         paymentMethod,
         items: cart.map(i => ({
           itemId: i.itemId,

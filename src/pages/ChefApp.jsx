@@ -8,41 +8,46 @@ const ChefOrderCard = ({ order, onAction, actionText, actionColor, isLoading, on
   return (
     <motion.div 
       layout
-      initial={{ opacity: 0, scale: 0.9, y: 20 }}
+      initial={{ opacity: 0, scale: 0.95, y: 20 }}
       animate={{ opacity: 1, scale: 1, y: 0 }}
-      exit={{ opacity: 0, scale: 0.9 }}
-      className="bg-gray-800 rounded-xl sm:rounded-2xl shadow-xl border border-gray-700 overflow-hidden flex flex-col"
+      exit={{ opacity: 0, scale: 0.95 }}
+      className="bg-gray-800/80 backdrop-blur-md rounded-2xl shadow-2xl border border-gray-700/50 overflow-hidden flex flex-col mb-4"
     >
-      <div className="p-3 sm:p-4 lg:p-6 flex-1">
-        <div className="flex justify-between items-start mb-2 sm:mb-3 gap-2">
+      <div className="p-4 sm:p-5 lg:p-6 flex-1">
+        <div className="flex justify-between items-start mb-4 gap-3">
           <div className="min-w-0 flex-1">
-            <div className="text-gray-400 text-[10px] sm:text-xs font-bold uppercase tracking-widest mb-0.5 sm:mb-1">Token</div>
-            <div className="text-4xl sm:text-5xl lg:text-7xl font-black text-white leading-none tracking-tighter truncate">{order.tokenNumber || '—'}</div>
+            <div className="text-gray-400 text-[10px] sm:text-xs font-bold uppercase tracking-widest mb-1">Token Number</div>
+            <div className="text-5xl sm:text-6xl lg:text-7xl font-black text-white leading-none tracking-tighter truncate drop-shadow-md">{order.tokenNumber || '—'}</div>
           </div>
-          <div className="bg-gray-700 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg sm:rounded-xl text-center shrink-0 max-w-[50%]">
-            <div className="text-gray-400 text-[10px] sm:text-xs font-bold uppercase">Table</div>
-            <div className="text-sm sm:text-lg lg:text-xl font-black text-white truncate px-1">{order.tableNumber}</div>
+          <div className="bg-gray-900/80 border border-gray-700 px-3 sm:px-4 py-2 rounded-xl text-center shrink-0 min-w-[70px] shadow-inner">
+            <div className="text-gray-400 text-[10px] sm:text-xs font-bold uppercase mb-0.5">Table</div>
+            <div className="text-lg sm:text-xl lg:text-2xl font-black text-primary truncate">{order.tableNumber}</div>
+            {order.customerName && (
+              <div className="text-[10px] text-gray-300 mt-1 truncate max-w-[80px] sm:max-w-[100px] mx-auto font-bold uppercase tracking-wider">
+                {order.customerName}
+              </div>
+            )}
           </div>
         </div>
         
-        <ul className="space-y-1.5 sm:space-y-2 mt-3 sm:mt-4">
+        <div className="h-px w-full bg-gradient-to-r from-transparent via-gray-700 to-transparent my-4"></div>
+
+        <ul className="space-y-2">
           {order.items && order.items.map((item, idx) => (
-            <li key={idx} className="flex justify-between items-center text-xs sm:text-sm lg:text-base text-gray-200 font-medium pb-1.5 sm:pb-2 border-b border-gray-700 last:border-0">
-              <span className="flex items-center gap-1.5 sm:gap-2">
-                <span className="bg-gray-700 text-white font-bold w-6 h-6 sm:w-7 sm:h-7 flex items-center justify-center rounded-md sm:rounded-lg text-[11px] sm:text-sm shrink-0">{item.qty}</span>
-                <span className="line-clamp-1">{item.name}</span>
-              </span>
+            <li key={idx} className="flex items-center text-sm sm:text-base lg:text-lg text-gray-200 font-medium">
+              <span className="bg-gray-700/50 border border-gray-600 text-white font-bold w-8 h-8 flex items-center justify-center rounded-lg text-sm shrink-0 mr-3 shadow-sm">{item.qty}</span>
+              <span className="line-clamp-2 leading-tight">{item.name}</span>
             </li>
           ))}
         </ul>
       </div>
       
-      <div className="flex">
+      <div className="flex border-t border-gray-700/50">
         {onUndo && (
           <button 
             onClick={() => onUndo(order)}
             disabled={isLoading}
-            className={`w-1/3 py-3 sm:py-4 lg:py-5 text-[10px] sm:text-sm lg:text-lg font-black uppercase tracking-wider transition-colors disabled:opacity-50 bg-gray-700 hover:bg-gray-600 text-white`}
+            className={`w-1/3 py-4 text-xs sm:text-sm lg:text-base font-black uppercase tracking-wider transition-colors disabled:opacity-50 bg-gray-900/50 hover:bg-gray-800 text-gray-400 hover:text-white`}
           >
             {undoText || 'Undo'}
           </button>
@@ -50,7 +55,7 @@ const ChefOrderCard = ({ order, onAction, actionText, actionColor, isLoading, on
         <button 
           onClick={() => onAction(order)}
           disabled={isLoading}
-          className={`${onUndo ? 'w-2/3 border-l border-gray-900' : 'w-full'} py-3 sm:py-4 lg:py-5 text-sm sm:text-base lg:text-xl font-black uppercase tracking-wider transition-colors disabled:opacity-50 ${actionColor}`}
+          className={`${onUndo ? 'w-2/3 border-l border-gray-700/50' : 'w-full'} py-4 sm:py-5 text-sm sm:text-base lg:text-xl font-black uppercase tracking-widest transition-all disabled:opacity-50 ${actionColor} hover:brightness-110 active:scale-95`}
         >
           {isLoading ? 'Processing...' : actionText}
         </button>

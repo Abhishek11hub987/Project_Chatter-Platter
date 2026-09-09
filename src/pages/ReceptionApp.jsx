@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, RotateCcw, Coffee, CheckCircle, Clock } from 'lucide-react';
+import { Search, RotateCcw, Coffee, CheckCircle, Clock, Plus } from 'lucide-react';
 import useStore from '../store/useStore';
 import { useOrders } from '../hooks/supabaseHooks';
+import CRMOrderModal from '../components/CRMOrderModal';
 
 const ReceptionApp = () => {
   const isAuthenticated = useStore(state => state.isAuthenticated);
@@ -15,6 +16,8 @@ const ReceptionApp = () => {
   
   const [editingOrder, setEditingOrder] = useState(null);
   const [editItems, setEditItems] = useState([]);
+  
+  const [showCRMModal, setShowCRMModal] = useState(false);
   
   const [prevPendingCount, setPrevPendingCount] = useState(0);
   
@@ -162,8 +165,22 @@ const ReceptionApp = () => {
       {/* Header */}
       <header className="bg-secondary text-white p-2.5 sm:p-3 lg:p-4 sticky top-0 z-20 shadow-md">
         <div className="max-w-4xl mx-auto flex items-center justify-between">
-          <h1 className="text-sm sm:text-lg lg:text-xl font-black text-primary">C&P RECEPTION</h1>
-          <div className="flex bg-gray-800 rounded-full p-0.5 sm:p-1">
+          <div className="flex items-center gap-4">
+            <h1 className="text-sm sm:text-lg lg:text-xl font-black text-primary">C&P RECEPTION</h1>
+            <button 
+              onClick={() => setShowCRMModal(true)}
+              className="hidden sm:flex items-center gap-1.5 bg-primary/20 text-primary hover:bg-primary/30 px-3 py-1.5 rounded-full text-xs font-bold transition-colors"
+            >
+              <Plus size={14} /> New Walk-in Order
+            </button>
+          </div>
+          <div className="flex bg-gray-800 rounded-full p-0.5 sm:p-1 gap-1">
+            <button 
+              onClick={() => setShowCRMModal(true)}
+              className="flex sm:hidden items-center justify-center bg-primary/20 text-primary w-8 h-8 rounded-full"
+            >
+              <Plus size={16} />
+            </button>
             <button 
               onClick={() => setActiveTab('pending')}
               className={`px-3 sm:px-4 py-1 sm:py-1.5 lg:py-2 rounded-full text-[11px] sm:text-xs lg:text-sm font-bold transition-colors relative ${activeTab === 'pending' ? 'bg-primary text-black' : 'text-gray-300'}`}
@@ -209,6 +226,11 @@ const ReceptionApp = () => {
                         <span className="bg-gray-100 text-gray-800 px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-full text-[11px] sm:text-xs lg:text-sm font-bold">
                           Table {order.tableNumber}
                         </span>
+                        {order.customerName && (
+                          <span className="bg-primary/20 text-primary-dark px-2 py-0.5 rounded-full text-[11px] sm:text-xs font-bold">
+                            {order.customerName}
+                          </span>
+                        )}
                         <span className="text-gray-400 text-[10px] sm:text-xs font-medium flex items-center gap-1">
                           <Clock size={10} className="sm:w-3 sm:h-3"/> Just now
                         </span>
@@ -280,7 +302,17 @@ const ReceptionApp = () => {
                           {order.status}
                         </span>
                       </div>
-                      <div className="text-xs sm:text-sm font-bold text-gray-500 mb-1.5 sm:mb-2">Table {order.tableNumber}</div>
+                      <div className="flex items-center gap-2 mb-1.5 sm:mb-2">
+                        <div className="text-xs sm:text-sm font-bold text-gray-500">Table {order.tableNumber}</div>
+                        {order.customerName && (
+                          <div className="text-[10px] sm:text-xs font-bold bg-gray-100 text-gray-700 px-2 py-0.5 rounded">
+                            {order.customerName}
+                          </div>
+                        )}
+                        <div className="text-[10px] text-gray-400 ml-auto font-mono">
+                          #{order.id.split('-')[0]}
+                        </div>
+                      </div>
                       <p className="text-[11px] sm:text-sm text-gray-600 truncate">
                         {order.items && order.items.map(i => `${i.qty}x ${i.name}`).join(', ')}
                       </p>
@@ -371,6 +403,11 @@ const ReceptionApp = () => {
             </motion.div>
           </motion.div>
         )}
+      </AnimatePresence>
+
+      {/* CRM Order Modal */}
+      <AnimatePresence>
+        {showCRMModal && <CRMOrderModal onClose={() => setShowCRMModal(false)} />}
       </AnimatePresence>
     </div>
   );

@@ -246,22 +246,37 @@ export const useOrders = (statusFilter = null) => {
   };
 
   const approveOrderAndAssignToken = async (orderId) => {
-    // Optimistic: immediately move to approved with a placeholder token
+    // Generate a random number from 1-99 that is not currently active
+    const activeTokens = orders
+      .filter(o => ['approved', 'cooking', 'ready'].includes(o.status) && o.tokenNumber)
+      .map(o => String(o.tokenNumber));
+
+    let token = '';
+    const availableTokens = [];
+    for (let i = 1; i <= 99; i++) {
+      if (!activeTokens.includes(String(i))) {
+        availableTokens.push(String(i));
+      }
+    }
+
+    if (availableTokens.length > 0) {
+      token = availableTokens[Math.floor(Math.random() * availableTokens.length)];
+    } else {
+      // Fallback if >99 active orders
+      token = String(Math.floor(Math.random() * 900) + 100); 
+    }
+
+    // Optimistic: immediately move to approved with the token
     setOrders(prev => prev.map(o =>
       o.id === orderId
-        ? { ...o, status: 'approved', tokenNumber: '...', approvedAt: new Date().toISOString() }
+        ? { ...o, status: 'approved', tokenNumber: token, approvedAt: new Date().toISOString() }
         : o
     ));
 
     try {
-      const { data: tokenNumber, error: rpcError } = await supabase
-        .rpc('get_next_token');
-
-      if (rpcError) throw rpcError;
-
       const updatePayload = {
         status: 'approved',
-        tokenNumber: tokenNumber,
+        tokenNumber: token,
         approvedAt: new Date().toISOString()
       };
 
@@ -271,16 +286,8 @@ export const useOrders = (statusFilter = null) => {
         .eq('id', orderId);
 
       if (error) throw error;
-
-      // Update local state with the real token number
-      setOrders(prev => prev.map(o =>
-        o.id === orderId
-          ? { ...o, tokenNumber: tokenNumber }
-          : o
-      ));
     } catch (err) {
       console.error('Error approving order:', err);
-      // Revert on failure
       loadOrders();
       throw err;
     }

@@ -13,6 +13,14 @@ const categoryColors = {
   SANDWICH: 'bg-amber-100 text-amber-800',
 };
 
+const categoryImages = {
+  HOT: '/images/coffee.jpg',
+  COLD: '/images/coffee.jpg', // Reusing coffee for cold for now
+  MOMO: '/images/momo.jpg', // Placeholder for when momo image is generated or copied
+  PASTA: '/images/pasta.jpg',
+  SANDWICH: '/images/sandwich.jpg',
+};
+
 // Helper: check if a cart item matches a menu item
 const isMatch = (cartItem, menuItem) => {
   const cartId = String(cartItem.itemId ?? cartItem.id ?? '');
@@ -58,10 +66,21 @@ const MenuCard = ({ item }) => {
       }}
       className={`bg-surface rounded-2xl shadow-sm overflow-hidden border border-gray-100 flex flex-col h-full active:scale-[0.98] transition-transform ${!item.isAvailable ? 'opacity-70 grayscale' : ''}`}
     >
-      {/* Top Half - Colored Block */}
-      <div className={`h-24 w-full flex items-center justify-center ${categoryColors[item.category] || 'bg-gray-100'} ${!item.isAvailable ? 'bg-gray-200 text-gray-500' : ''}`}>
-        <span className="font-black text-2xl opacity-30">{item.category}</span>
-      </div>
+      {/* Top Half - Colored Block or Image */}
+      {categoryImages[item.category] ? (
+        <div className={`h-32 w-full relative ${!item.isAvailable ? 'opacity-70' : ''}`}>
+          <img 
+            src={categoryImages[item.category]} 
+            alt={item.name}
+            className="w-full h-full object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
+        </div>
+      ) : (
+        <div className={`h-24 w-full flex items-center justify-center ${categoryColors[item.category] || 'bg-gray-100'} ${!item.isAvailable ? 'bg-gray-200 text-gray-500' : ''}`}>
+          <span className="font-black text-2xl opacity-30">{item.category}</span>
+        </div>
+      )}
       
       {/* Bottom Half - Info */}
       <div className="p-3 sm:p-4 flex flex-col flex-grow justify-between gap-2 sm:gap-3">

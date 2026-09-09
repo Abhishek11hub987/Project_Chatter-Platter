@@ -1,9 +1,24 @@
+import { useState } from 'react';
 import { motion } from 'framer-motion';
 import useStore from '../../store/useStore';
 import { UtensilsCrossed } from 'lucide-react';
 
 const Welcome = ({ onNext }) => {
   const tableNumber = useStore((state) => state.tableNumber);
+  const setCustomerName = useStore((state) => state.setCustomerName);
+  const customerName = useStore((state) => state.customerName);
+  const [name, setName] = useState(customerName || '');
+  const [error, setError] = useState('');
+
+  const handleProceed = () => {
+    const trimmed = name.trim();
+    if (!trimmed || trimmed.length < 2) {
+      setError('Please enter your name (at least 2 characters)');
+      return;
+    }
+    setCustomerName(trimmed);
+    onNext();
+  };
 
   return (
     <div className="flex flex-col items-center justify-between h-full w-full bg-gradient-to-br from-primary via-primary to-primary-dark p-6 sm:p-8 relative overflow-hidden">
@@ -66,15 +81,29 @@ const Welcome = ({ onNext }) => {
         </p>
       </motion.div>
 
-      {/* Bottom - CTA */}
+      {/* Bottom - Name Input & CTA */}
       <motion.div 
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.6, duration: 0.5 }}
         className="w-full pb-6 sm:pb-10 space-y-3 z-10"
       >
+        <div className="relative">
+          <input
+            type="text"
+            value={name}
+            onChange={(e) => { setName(e.target.value); setError(''); }}
+            placeholder="Enter your name"
+            className="w-full bg-white/90 backdrop-blur-sm rounded-2xl py-4 px-5 text-center text-lg font-bold text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-black/30 shadow-lg"
+            maxLength={30}
+            onKeyDown={(e) => e.key === 'Enter' && handleProceed()}
+          />
+          {error && (
+            <p className="text-red-700 text-xs font-bold text-center mt-2 bg-red-100 py-1.5 rounded-lg">{error}</p>
+          )}
+        </div>
         <button 
-          onClick={onNext}
+          onClick={handleProceed}
           className="w-full bg-black text-primary hover:bg-gray-900 rounded-2xl py-4 sm:py-5 text-base sm:text-lg font-black uppercase tracking-wider shadow-2xl transition-all active:scale-[0.98]"
         >
           Browse Our Menu →
@@ -92,3 +121,4 @@ const Welcome = ({ onNext }) => {
 };
 
 export default Welcome;
+

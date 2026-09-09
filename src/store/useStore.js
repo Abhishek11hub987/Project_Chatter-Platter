@@ -8,6 +8,9 @@ const useStore = create(
   tableNumber: null,
   setTableNumber: (table) => set({ tableNumber: table }),
   
+  customerName: '',
+  setCustomerName: (name) => set({ customerName: name }),
+  
   cart: [],
   addToCart: (item) => set((state) => {
     const id = item.itemId || item.id;
@@ -62,6 +65,7 @@ const useStore = create(
       partialize: (state) => ({ 
         cart: state.cart, 
         tableNumber: state.tableNumber,
+        customerName: state.customerName,
         activeOrderId: state.activeOrderId
       }),
     }
