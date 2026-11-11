@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../hooks/supabaseHooks';
+import { useAuth, useDataMode } from '../hooks/supabaseHooks';
 import { LogOut, Loader2, MonitorSmartphone } from 'lucide-react';
 import OwnerApp from './OwnerApp';
 import AdminApp from './AdminApp';
@@ -9,6 +9,7 @@ import ReceptionApp from './ReceptionApp';
 
 const Dashboard = () => {
   const { user, role: rawRole, loading, logout } = useAuth();
+  const { backendLabel } = useDataMode();
   const role = rawRole ? rawRole.toLowerCase().trim() : null;
   const navigate = useNavigate();
   const [viewAs, setViewAs] = useState(null);
@@ -39,70 +40,86 @@ const Dashboard = () => {
     );
   }
 
-  // Chef and Reception views get FULL SCREEN (no dashboard nav bar blocking them)
   const isFullscreenView = viewAs === 'chef' || viewAs === 'reception';
+  const canSwitchViews = role === 'owner' || role === 'admin';
 
   if (isFullscreenView) {
     return (
       <div className="min-h-screen flex flex-col">
-        {/* Slim top bar for Chef/Reception - only if admin/owner can switch views */}
-        {(role === 'owner' || role === 'admin') && (
-          <div className="bg-black flex items-center justify-between px-3 py-2 z-50 shrink-0">
+        {(canSwitchViews || user?.isDemo) && (
+          <div className="bg-black flex items-center justify-between px-3 py-2 z-50 shrink-0 border-b border-gray-800">
             <div className="flex items-center gap-2">
-              <div className="w-6 h-6 bg-gray-800 rounded flex items-center justify-center">
-                <div className="w-3 h-3 border border-[#FFC107] rounded-sm"></div>
-              </div>
-              <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${role === 'admin' ? 'bg-gray-700 text-gray-300' : 'bg-[#FFC107] text-black'}`}>
+              <span
+                className={`px-2 py-0.5 rounded-full text-[10px] font-black uppercase ${
+                  role === 'admin' ? 'bg-gray-700 text-gray-200' : 'bg-[#FFC107] text-black'
+                }`}
+              >
                 {role}
               </span>
+              <span className="text-[10px] font-bold text-gray-400">
+                {backendLabel}
+              </span>
             </div>
-            
+
             <div className="flex items-center gap-2 relative">
-              <div 
-                className="flex items-center gap-1.5 bg-gray-900 border border-gray-700 px-2 py-1 rounded-lg cursor-pointer"
-                onClick={() => setDropdownOpen(!dropdownOpen)}
-              >
-                <MonitorSmartphone className="w-3 h-3 text-gray-500" />
-                <span className="text-xs font-bold text-gray-300 select-none capitalize">
-                  {viewAs}
-                </span>
-              </div>
-              
-              {/* Custom Dropdown Menu */}
+              {canSwitchViews && (
+                <div
+                  className="flex items-center gap-1.5 bg-gray-900 border border-gray-700 px-2.5 py-1 rounded-lg cursor-pointer"
+                  onClick={() => setDropdownOpen(!dropdownOpen)}
+                >
+                  <MonitorSmartphone className="w-3.5 h-3.5 text-primary" />
+                  <span className="text-xs font-bold text-gray-200 select-none capitalize">
+                    {viewAs}
+                  </span>
+                </div>
+              )}
+
               {dropdownOpen && (
-                <div className="absolute top-full mt-1 right-8 bg-gray-900 border border-gray-700 rounded-lg shadow-xl overflow-hidden min-w-[120px] z-50">
+                <div className="absolute top-full mt-1 right-8 bg-gray-900 border border-gray-700 rounded-xl shadow-xl overflow-hidden min-w-[130px] z-50">
                   {role === 'admin' && (
-                    <button 
-                      className="w-full text-left px-3 py-2 text-xs font-bold text-gray-300 hover:bg-gray-800 hover:text-white transition-colors"
-                      onClick={() => { setViewAs('admin'); setDropdownOpen(false); }}
+                    <button
+                      className="w-full text-left px-3.5 py-2 text-xs font-bold text-gray-300 hover:bg-gray-800 hover:text-white"
+                      onClick={() => {
+                        setViewAs('admin');
+                        setDropdownOpen(false);
+                      }}
                     >
-                      Admin
+                      Admin &amp; SQL
                     </button>
                   )}
-                  <button 
-                    className="w-full text-left px-3 py-2 text-xs font-bold text-gray-300 hover:bg-gray-800 hover:text-white transition-colors"
-                    onClick={() => { setViewAs('owner'); setDropdownOpen(false); }}
+                  <button
+                    className="w-full text-left px-3.5 py-2 text-xs font-bold text-gray-300 hover:bg-gray-800 hover:text-white"
+                    onClick={() => {
+                      setViewAs('owner');
+                      setDropdownOpen(false);
+                    }}
                   >
-                    Owner
+                    Owner AI
                   </button>
-                  <button 
-                    className="w-full text-left px-3 py-2 text-xs font-bold text-gray-300 hover:bg-gray-800 hover:text-white transition-colors"
-                    onClick={() => { setViewAs('chef'); setDropdownOpen(false); }}
+                  <button
+                    className="w-full text-left px-3.5 py-2 text-xs font-bold text-gray-300 hover:bg-gray-800 hover:text-white"
+                    onClick={() => {
+                      setViewAs('chef');
+                      setDropdownOpen(false);
+                    }}
                   >
-                    Chef
+                    Chef KDS
                   </button>
-                  <button 
-                    className="w-full text-left px-3 py-2 text-xs font-bold text-gray-300 hover:bg-gray-800 hover:text-white transition-colors"
-                    onClick={() => { setViewAs('reception'); setDropdownOpen(false); }}
+                  <button
+                    className="w-full text-left px-3.5 py-2 text-xs font-bold text-gray-300 hover:bg-gray-800 hover:text-white"
+                    onClick={() => {
+                      setViewAs('reception');
+                      setDropdownOpen(false);
+                    }}
                   >
-                    Reception
+                    Reception POS
                   </button>
                 </div>
               )}
 
-              <button 
+              <button
                 onClick={handleLogout}
-                className="text-gray-500 hover:text-white p-1.5 rounded-lg transition-colors"
+                className="text-gray-400 hover:text-white p-1.5 rounded-lg transition-colors"
                 title="Logout"
               >
                 <LogOut className="w-4 h-4" />
@@ -111,29 +128,29 @@ const Dashboard = () => {
           </div>
         )}
 
-        {/* Full screen content */}
         <div className="flex-1 flex flex-col overflow-hidden" onClick={() => setDropdownOpen(false)}>
-          {viewAs === 'chef' ? <ChefApp /> : <ReceptionApp />}
+          {viewAs === 'chef' ? <ChefApp bypassPin /> : <ReceptionApp bypassPin />}
         </div>
       </div>
     );
   }
 
-  // Owner and Admin views get the standard nav
   const renderDashboard = () => {
     switch (viewAs) {
-      case 'owner': return <OwnerApp />;
-      case 'admin': return <AdminApp />;
+      case 'owner':
+        return <OwnerApp />;
+      case 'admin':
+        return <AdminApp />;
       default:
         return (
           <div className="text-center mt-20 flex flex-col items-center justify-center space-y-4 p-6">
             <h2 className="text-xl font-bold">Unauthorized Role</h2>
             <p className="text-gray-500">Your account does not have a recognized staff role.</p>
-            <button 
+            <button
               onClick={handleLogout}
-              className="mt-6 px-6 py-2 bg-black text-white font-bold rounded-lg shadow-md hover:bg-gray-800 transition-colors"
+              className="mt-4 px-6 py-2 bg-black text-white font-bold rounded-xl shadow-md hover:bg-gray-800"
             >
-              Sign out & Try Another Account
+              Sign out &amp; Switch Account
             </button>
           </div>
         );
@@ -141,70 +158,87 @@ const Dashboard = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50" onClick={() => dropdownOpen && setDropdownOpen(false)}>
       <nav className="bg-white border-b sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-3 sm:px-4 h-14 sm:h-16 flex items-center justify-between">
           <div className="flex items-center gap-2 sm:gap-3">
-            <div className="w-7 h-7 sm:w-8 sm:h-8 bg-black rounded-lg flex items-center justify-center">
-              <div className="w-3.5 h-3.5 sm:w-4 sm:h-4 border-2 border-[#FFC107] rounded-sm"></div>
+            <div className="w-8 h-8 bg-black rounded-xl flex items-center justify-center">
+              <div className="w-4 h-4 border-2 border-[#FFC107] rounded-sm" />
             </div>
-            <span className="font-black text-sm sm:text-lg hidden sm:block">Chatter & Platter Staff</span>
-            
-            <span className={`px-2 sm:px-3 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-xs font-bold uppercase tracking-wide ml-1 sm:ml-2 ${role === 'owner' ? 'bg-[#FFC107] text-black' : 'bg-gray-100 text-gray-700'}`}>
+            <span className="font-black text-sm sm:text-lg hidden sm:block">
+              Chatter &amp; Platter OS
+            </span>
+
+            <span
+              className={`px-2.5 py-0.5 rounded-full text-[10px] sm:text-xs font-black uppercase tracking-wide ${
+                role === 'owner' ? 'bg-[#FFC107] text-black' : 'bg-gray-100 text-gray-700'
+              }`}
+            >
               {role}
             </span>
           </div>
-          
+
           <div className="flex items-center gap-2 sm:gap-4">
-            {(role === 'owner' || role === 'admin') && (
-              <div className="relative">
-                <div 
-                  className="flex items-center gap-1.5 sm:gap-2 bg-gray-50 border px-2 sm:px-3 py-1 sm:py-1.5 rounded-xl cursor-pointer"
+            {canSwitchViews && (
+              <div className="relative" onClick={(e) => e.stopPropagation()}>
+                <div
+                  className="flex items-center gap-2 bg-gray-50 border px-3 py-1.5 rounded-xl cursor-pointer hover:bg-gray-100"
                   onClick={() => setDropdownOpen(!dropdownOpen)}
                 >
-                  <MonitorSmartphone className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-gray-500" />
+                  <MonitorSmartphone className="w-4 h-4 text-gray-500" />
                   <span className="text-xs sm:text-sm font-bold text-gray-700 select-none capitalize">
                     {viewAs} View
                   </span>
                 </div>
 
-                {/* Custom Dropdown Menu */}
                 {dropdownOpen && (
-                  <div className="absolute top-full mt-2 right-0 bg-white border border-gray-100 rounded-xl shadow-xl overflow-hidden min-w-[150px] z-50">
+                  <div className="absolute top-full mt-2 right-0 bg-white border border-gray-100 rounded-2xl shadow-xl overflow-hidden min-w-[160px] z-50">
                     {role === 'admin' && (
-                      <button 
-                        className="w-full text-left px-4 py-2.5 text-sm font-bold text-gray-700 hover:bg-gray-50 transition-colors"
-                        onClick={() => { setViewAs('admin'); setDropdownOpen(false); }}
+                      <button
+                        className="w-full text-left px-4 py-2.5 text-sm font-bold text-gray-700 hover:bg-gray-50"
+                        onClick={() => {
+                          setViewAs('admin');
+                          setDropdownOpen(false);
+                        }}
                       >
-                        Admin View
+                        Admin &amp; SQL
                       </button>
                     )}
-                    <button 
-                      className="w-full text-left px-4 py-2.5 text-sm font-bold text-gray-700 hover:bg-gray-50 transition-colors"
-                      onClick={() => { setViewAs('owner'); setDropdownOpen(false); }}
+                    <button
+                      className="w-full text-left px-4 py-2.5 text-sm font-bold text-gray-700 hover:bg-gray-50"
+                      onClick={() => {
+                        setViewAs('owner');
+                        setDropdownOpen(false);
+                      }}
                     >
-                      Owner View
+                      Owner AI Hub
                     </button>
-                    <button 
-                      className="w-full text-left px-4 py-2.5 text-sm font-bold text-gray-700 hover:bg-gray-50 transition-colors"
-                      onClick={() => { setViewAs('chef'); setDropdownOpen(false); }}
+                    <button
+                      className="w-full text-left px-4 py-2.5 text-sm font-bold text-gray-700 hover:bg-gray-50"
+                      onClick={() => {
+                        setViewAs('chef');
+                        setDropdownOpen(false);
+                      }}
                     >
-                      Chef View
+                      Chef KDS
                     </button>
-                    <button 
-                      className="w-full text-left px-4 py-2.5 text-sm font-bold text-gray-700 hover:bg-gray-50 transition-colors"
-                      onClick={() => { setViewAs('reception'); setDropdownOpen(false); }}
+                    <button
+                      className="w-full text-left px-4 py-2.5 text-sm font-bold text-gray-700 hover:bg-gray-50"
+                      onClick={() => {
+                        setViewAs('reception');
+                        setDropdownOpen(false);
+                      }}
                     >
-                      Reception View
+                      Reception POS
                     </button>
                   </div>
                 )}
               </div>
             )}
 
-            <button 
+            <button
               onClick={handleLogout}
-              className="p-1.5 sm:p-2 hover:bg-gray-100 rounded-xl transition-colors flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm font-bold text-gray-600"
+              className="p-2 hover:bg-gray-100 rounded-xl transition-colors flex items-center gap-1.5 text-xs sm:text-sm font-bold text-gray-600"
             >
               <LogOut className="w-4 h-4 sm:w-5 sm:h-5" />
               <span className="hidden sm:block">Logout</span>
@@ -213,9 +247,7 @@ const Dashboard = () => {
         </div>
       </nav>
 
-      <main>
-        {renderDashboard()}
-      </main>
+      <main>{renderDashboard()}</main>
     </div>
   );
 };

@@ -5,8 +5,10 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:host": "vite --host",
+    "server": "node server/cafeDbPlugin.js",
     "build": "vite build",
-    "lint": "eslint src --ext js,jsx",
+    "lint": "oxlint src server",
     "preview": "vite preview",
     "prepare": "husky install",
     "format": "prettier --write src",

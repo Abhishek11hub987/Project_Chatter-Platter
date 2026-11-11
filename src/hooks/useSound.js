@@ -1,10 +1,6 @@
 import { useCallback, useRef, useEffect } from 'react';
 
-// Tiny base64 encoded sine wave beeps (very short, low file size)
-// For a real production app you would use a proper mp3/wav
-const dingSound = 'data:audio/wav;base64,UklGRl9vT19XQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YU'; // Placeholder for ding, browsers might reject invalid wav. 
-
-// A simple synthesizer function using Web Audio API instead for reliability
+// Reliable Web Audio API synthesizer for notification chimes and loud kitchen alerts
 export const useSound = () => {
   const audioCtx = useRef(null);
 
