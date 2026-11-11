@@ -24,3 +24,4 @@ Thank you for using and contributing to **Chatter & Platter Cafe OS**! Because t
 ## Reporting a Vulnerability
 
 If you discover a security vulnerability, please open a private security advisory on the GitHub repository rather than posting exploit details in a public issue.
+
